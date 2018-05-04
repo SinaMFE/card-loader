@@ -90,8 +90,11 @@ function loader(content) {
           self.emitFile(cssDir, cssContent);
         }
 
-        out =
-          `module.exports = {
+        out = `
+          var appSNC = require("@mfelibs/universal-framework").default
+
+          console.log(appSNC);
+          module.exports = {
             show: function(param) {
               let fParam = {}
               Object.assign(fParam, {

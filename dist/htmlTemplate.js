@@ -8,6 +8,7 @@ module.exports = `<!DOCTYPE html>
   <link href="./static/index.min.css" rel="stylesheet">
 </head>
 <body>
+  <div id="root"></div>
   <script src="./static/index.min.js"></script>
 </body>
 </html>`
