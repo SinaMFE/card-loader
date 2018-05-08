@@ -31,10 +31,12 @@ function loader(content) {
 
   let promise;
 
+  const cardName = getCardNameFromManifest(this);
+
   const filePath = this.resource;
 
-  if (!(filePath in cardModuleMap)) {
-    cardModuleMap[filePath] = cardModuleId;
+  if (!(cardName in cardModuleMap)) {
+    cardModuleMap[cardName] = cardModuleId;
     // cardModuleId++;
   }
 
@@ -47,10 +49,12 @@ function loader(content) {
 
   if (isApp) {
     const rootDir = appDirectory;
-    promise = BundleCardAssets(filePath, cardModuleId++)
+    promise = BundleCardAssets(filePath, cardModuleId++, cardName)
       .then(({
-        cardModuleId
+        cardModuleId,
+        cardName
       }) => {
+
         const jsFilePath = path.resolve(
           rootDir,
           `dist${cardModuleId}/index/static/js/main.min.js`
@@ -74,7 +78,7 @@ function loader(content) {
 
         const cardDistRootPath = "modal";
 
-        const cardDir = path.join(cardDistRootPath, `card_${cardModuleId}`);
+        const cardDir = path.join(cardDistRootPath, cardName);
 
         const htmlDir = path.join(cardDir, "index.html");
 
@@ -96,9 +100,10 @@ function loader(content) {
           console.log(appSNC);
           module.exports = {
             show: function(param) {
+              console.log("__card loader log__")
               let fParam = {}
               Object.assign(fParam, {
-                path: "modal/card_${cardModuleId}/index.html"
+                path: "modal/${cardName}/index.html"
               }, param);
               appSNC.showWVModal(fParam);
             }
@@ -121,7 +126,7 @@ function loader(content) {
   }
 }
 
-function BundleCardAssets(filePath, cardModuleId) {
+function BundleCardAssets(filePath, cardModuleId, cardName) {
   const webpack = require("webpack");
 
   const getWebpackConfig = require("./webpackConfig.js");
@@ -137,9 +142,32 @@ function BundleCardAssets(filePath, cardModuleId) {
     // fs.mkdirSync(tempSrcFilePath);
   }
 
+  const code = `
+    var img = new Image()
+    img.src = 'https://__bridge_loaded__'
+  
+    var _a = require("${filePath}");
+    var appSNC = require("@mfelibs/universal-framework").default;
+    require("@mfelibs/universal-framework/src/libs/apis/closeWindow");
+
+    var wintip = require("wintip");
+
+    function closeModal() {
+      appSNC.closeWindow()
+    }
+
+    wintip("modal load")
+
+    // appSNC.ready((data) => {
+
+      wintip("trigger ::: ready")
+      _a.card({}, {closeModal}, "root").show()
+    // })
+    `;
+
   fs.writeFileSync(
     tempSrcFilePath,
-    `var _a = require("${filePath}");_a.show()`
+    code
   );
 
   webpackConfig.entry = tempSrcFilePath;
@@ -156,10 +184,31 @@ function BundleCardAssets(filePath, cardModuleId) {
     compiler.run((err, stats) => {
       if (err) return reject(err);
       resolve({
-        cardModuleId
+        cardModuleId,
+        cardName
       });
     });
   });
+}
+
+function getCardNameFromManifest(loaderContext) {
+  var manifestPath = path.join(loaderContext.context, "manifest.json");
+  if (fs.existsSync(manifestPath) != true) {
+    throw "没有找到card对应的manifest.json，card入口文件平级建立manifest.json文件";
+  }
+  let loaderName = "";
+  try {
+    const manifest = require(manifestPath);
+    loaderName = manifest.name; //打包的时候输出目录用
+  } catch (ex) {
+    throw "card对应manifest识别失败！";
+  }
+
+  if (loaderName === "") {
+    throw "card name不得为空！"
+  }
+
+  return loaderName;
 }
 
 function removeDir({
