@@ -38,13 +38,43 @@ function loader(content) {
   if (!(cardName in cardModuleMap)) {
     cardModuleMap[cardName] = cardModuleId;
     // cardModuleId++;
-  } else {
+  } else if (process.env.NODE_ENV == "production") {
     throw new Error("[card-loader] 命名重复，已有模块命名为" + cardName)
   }
 
   if (isWap) {
-    out += `var _a = require("${filePath}");`;
-    out += `module.exports = _a;`;
+
+    const jsRuntime = fs.readFileSync(path.join(__dirname, "./web.runtime.js"));
+
+    out += `var _a = require("${filePath}").default;`;
+    out += jsRuntime;
+    out += `module.exports = {
+      show(param) {
+
+        if (!param || typeof data !== "object") {
+          throw new Error("参数不存在或非对象！")
+        }
+
+        let data = param.data
+        if (!data || typeof data !== "object") {
+          data = {}
+        }
+        const display = param.display
+        if (!display || typeof display !== "object") {
+          display = {};
+          display.opacity = 0;
+          display.backgroundColor = "black";
+        }
+        addLayer(display.backgroundColor, display.opacity)
+
+        _a(data, {
+          closeModal(cb) {
+            cb && cb()
+            removeLayer()
+          }
+        }, rootId).show();
+      }
+    };`;
 
     promise = Promise.resolve();
   }
@@ -145,22 +175,18 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
   }
 
   const code = `
-    var _a = require("${filePath}");
+    var _a = require("${filePath}").default;
     var appSNC = require("@mfelibs/universal-framework").default;
     require("@mfelibs/universal-framework/src/libs/apis/closeWindow");
-
-    var wintip = require("wintip");
+    require("@mfelibs/universal-framework/src/libs/apis/onRendered");
 
     function closeModal() {
       appSNC.closeWindow()
     }
 
-    wintip("modal load")
-
     appSNC.ready((data) => {
-
-      wintip("trigger ::: ready")
-      _a.card(data, {closeModal}, "root").show()
+      _a(data, {closeModal}, "root").show()
+      appSNC.onRendered();
     })
     `;
 
