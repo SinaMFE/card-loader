@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "author": "huguang",
   "description": "card loader module for webpack marauder",
   "license": "MIT",
@@ -12,8 +12,8 @@
     "dist"
   ],
   "dependencies": {
-    "loader-utils": "^1.0.2",
-    "schema-utils": "^0.4.5"
+    "@mfelibs/universal-framework": "^0.3.42",
+    "wintip": "^1.4.0"
   },
   "devDependencies": {
     "babel-cli": "^6.0.0",

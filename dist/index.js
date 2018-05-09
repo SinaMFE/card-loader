@@ -38,6 +38,8 @@ function loader(content) {
   if (!(cardName in cardModuleMap)) {
     cardModuleMap[cardName] = cardModuleId;
     // cardModuleId++;
+  } else {
+    throw new Error("[card-loader] 命名重复，已有模块命名为" + cardName)
   }
 
   if (isWap) {
@@ -143,9 +145,6 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
   }
 
   const code = `
-    var img = new Image()
-    img.src = 'https://__bridge_loaded__'
-  
     var _a = require("${filePath}");
     var appSNC = require("@mfelibs/universal-framework").default;
     require("@mfelibs/universal-framework/src/libs/apis/closeWindow");
@@ -158,11 +157,11 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
 
     wintip("modal load")
 
-    // appSNC.ready((data) => {
+    appSNC.ready((data) => {
 
       wintip("trigger ::: ready")
-      _a.card({}, {closeModal}, "root").show()
-    // })
+      _a.card(data, {closeModal}, "root").show()
+    })
     `;
 
   fs.writeFileSync(
@@ -194,18 +193,18 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
 function getCardNameFromManifest(loaderContext) {
   var manifestPath = path.join(loaderContext.context, "manifest.json");
   if (fs.existsSync(manifestPath) != true) {
-    throw "没有找到card对应的manifest.json，card入口文件平级建立manifest.json文件";
+    throw new Error("[card-loader] 没有找到card对应的manifest.json，在card入口文件同目录建立manifest.json文件");
   }
   let loaderName = "";
   try {
     const manifest = require(manifestPath);
     loaderName = manifest.name; //打包的时候输出目录用
   } catch (ex) {
-    throw "card对应manifest识别失败！";
+    throw new Error("[card-loader] card对应manifest识别失败！");
   }
 
   if (loaderName === "") {
-    throw "card name不得为空！"
+    throw new Error("[card-loader] manifest name字段不得为空！");
   }
 
   return loaderName;
