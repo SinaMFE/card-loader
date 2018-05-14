@@ -89,12 +89,12 @@ function loader(content) {
 
         const jsFilePath = path.resolve(
           rootDir,
-          `dist${cardModuleId}/index/static/js/main.min.js`
+          `build/card/${cardModuleId}/index/static/js/main.min.js`
         );
 
         const cssFilePath = path.resolve(
           rootDir,
-          `dist${cardModuleId}/index/static/css/main.min.css`
+          `build/card/${cardModuleId}/index/static/css/main.min.css`
         );
 
         const jsContent = fs.readFileSync(jsFilePath);
@@ -127,7 +127,13 @@ function loader(content) {
         }
 
         out = `
-          var appSNC = require("@mfelibs/universal-framework").default
+          var appSNC = require("@mfelibs/universal-framework").default;
+
+          var showWVModal = require("@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal").default;
+
+          appSNC.mountApi("appApis", {
+            showWVModal
+          });
 
           console.log(appSNC);
           module.exports = {
@@ -159,6 +165,9 @@ function loader(content) {
 }
 
 function BundleCardAssets(filePath, cardModuleId, cardName) {
+
+  cardModuleId = cardModuleId.toString();
+
   const webpack = require("webpack");
 
   const getWebpackConfig = require("./webpackConfig.js");
@@ -167,10 +176,10 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
     entry: "index"
   });
 
-  const tempSrcPath = path.resolve(appDirectory, "temp" + cardModuleId);
+  const tempSrcPath = path.resolve(appDirectory, path.join("build/card/", cardModuleId));
   const tempSrcFilePath = path.resolve(tempSrcPath, "index.js");
   if (!fs.existsSync(tempSrcPath)) {
-    fs.mkdirSync(tempSrcPath);
+    fs.mkdirpSync(tempSrcPath);
     // fs.mkdirSync(tempSrcFilePath);
   }
 
@@ -188,6 +197,8 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
       _a(data, {closeModal}, "root").show()
       appSNC.onRendered();
     })
+
+    appSNC.onRendered();
     `;
 
   fs.writeFileSync(
@@ -199,7 +210,7 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
 
   webpackConfig.output.path = path.resolve(
     appDirectory,
-    "dist" + cardModuleId,
+    path.join("build/card/", cardModuleId),
     "index"
   );
 
@@ -240,15 +251,14 @@ function removeDir({
   rootDir,
   cardModuleId
 }) {
-  const tempDir = path.resolve(rootDir, "temp" + cardModuleId);
+  const tempDir = path.resolve(rootDir, path.join("build/card/", cardModuleId));
 
-  const distDir = path.resolve(rootDir, "dist" + cardModuleId);
+  // const distDir = path.resolve(rootDir, "dist" + cardModuleId);
 
   if (fs.existsSync(tempDir)) {
-    return Promise.all([fs.emptyDir(tempDir), fs.emptyDir(distDir)]).then(
+    return Promise.all([fs.emptyDir(tempDir)]).then(
       () => {
         fs.rmdirSync(tempDir);
-        fs.rmdirSync(distDir);
       }
     );
   }
