@@ -9,6 +9,7 @@ exports.default = loader;
 
 const fs = require("fs-extra");
 const path = require("path");
+const glob = require("glob");
 
 const appDirectory = fs.realpathSync(process.cwd());
 
@@ -87,44 +88,46 @@ function loader(content) {
         cardName
       }) => {
 
-        const jsFilePath = path.resolve(
+        const staticBuildFilePath = path.resolve(
           rootDir,
-          `build/card/${cardModuleId}/index/static/js/main.min.js`
+          `build/card/${cardModuleId}/index/static/`
         );
-
-        const cssFilePath = path.resolve(
-          rootDir,
-          `build/card/${cardModuleId}/index/static/css/main.min.css`
-        );
-
-        const jsContent = fs.readFileSync(jsFilePath);
-
-        let cssContent = undefined;
-
-        try {
-          cssContent = fs.readFileSync(cssFilePath);
-        } catch (err) {}
-        // const cssContent =
 
         const htmlContent = require("./htmlTemplate");
 
-        const cardDistRootPath = "modal";
+        const destCardRootPath = "modal";
 
-        const cardDir = path.join(cardDistRootPath, cardName);
+        const destCardValidDir = path.join(destCardRootPath, cardName);
 
-        const htmlDir = path.join(cardDir, "index.html");
+        const htmlDir = path.join(destCardValidDir, "index.html");
 
         self.emitFile(htmlDir, htmlContent);
 
-        const jsDir = path.join(cardDir, "static/index.min.js");
+        const staticFileArr = glob.sync(path.join(staticBuildFilePath, "**/*.*"))
 
-        self.emitFile(jsDir, jsContent);
+        const fileRelaPathArr = staticFileArr.map((filePath) => {
 
-        if (cssContent) {
-          const cssDir = path.join(cardDir, "static/index.min.css");
+          return filePath.split(staticBuildFilePath)[1]
+        })
 
-          self.emitFile(cssDir, cssContent);
-        }
+        const readFilePromiseArr = staticFileArr.map((filePath) => {
+
+          return new Promise((resolve, reject) => {
+
+            fs.readFile(filePath).then((value) => {
+              resolve(value)
+            })
+          })
+        })
+
+        const fileEmitPms = Promise.all(readFilePromiseArr).then((files, index) => {
+
+          files.forEach((content, index) => {
+            const destPath = path.join(destCardValidDir, "static", fileRelaPathArr[index]);
+
+            this.emitFile(destPath, content);
+          })
+        })
 
         out = `
           var appSNC = require("@mfelibs/universal-framework").default;
@@ -147,10 +150,13 @@ function loader(content) {
             }
           }`;
 
-        return {
-          rootDir,
-          cardModuleId
-        };
+        return fileEmitPms.then(() => {
+
+          return {
+            rootDir,
+            cardModuleId
+          }
+        });
       })
       .then(removeDir);
   }

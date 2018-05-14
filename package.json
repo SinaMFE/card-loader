@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": "huguang",
   "description": "card loader module for webpack marauder",
   "license": "MIT",
@@ -16,6 +16,7 @@
     "wintip": "^1.4.0"
   },
   "devDependencies": {
+    "glob": "^7.1.2",
     "babel-cli": "^6.0.0",
     "babel-jest": "^21.0.0",
     "babel-plugin-transform-object-rest-spread": "^6.0.0",
