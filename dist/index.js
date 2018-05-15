@@ -56,11 +56,11 @@ function loader(content) {
           throw new Error("参数不存在或非对象！")
         }
 
-        let data = param.data
+        var data = param.data
         if (!data || typeof data !== "object") {
           data = {}
         }
-        const display = param.display
+        var display = param.display
         if (!display || typeof display !== "object") {
           display = {};
           display.opacity = 0;
@@ -69,7 +69,7 @@ function loader(content) {
         addLayer(display.backgroundColor, display.opacity)
 
         _a(data, {
-          closeModal(cb) {
+          closeModal: function(cb) {
             cb && cb()
             removeLayer()
           }
@@ -142,7 +142,7 @@ function loader(content) {
           module.exports = {
             show: function(param) {
               console.log("__card loader log__")
-              let fParam = {}
+              var fParam = {}
               Object.assign(fParam, {
                 path: "modal/${cardName}/index.html"
               }, param);
@@ -199,8 +199,8 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
       appSNC.closeWindow()
     }
 
-    appSNC.ready((data) => {
-      _a(data, {closeModal}, "root").show()
+    appSNC.ready(function(data) {
+      _a(data, {closeModal: closeModal}, "root").show()
       appSNC.onRendered();
     })
 
