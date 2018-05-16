@@ -212,7 +212,8 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
     code
   );
 
-  webpackConfig.entry = tempSrcFilePath;
+  // webpackConfig.entry = tempSrcFilePath;
+  webpackConfig.entry.index.splice(-1, 1, tempSrcFilePath)
 
   webpackConfig.output.path = path.resolve(
     appDirectory,
