@@ -1,331 +1,108 @@
-[![npm][npm]][npm-url]
-[![node][node]][node-url]
-[![deps][deps]][deps-url]
-[![tests][tests]][tests-url]
-[![coverage][cover]][cover-url]
-[![chat][chat]][chat-url]
+本说明主要针对浮层的开发
 
-<div align="center">
-  <a href="https://github.com/webpack/webpack">
-    <img width="200" height="200"
-      src="https://webpack.js.org/assets/icon-square-big.svg">
-  </a>
-  <h1>File Loader</h1>
-  <p>Instructs webpack to emit the required object as file and to return its public URL</p>
-</div>
+## 安装和使用
 
-<h2 align="center">Install</h2>
+安装：
 
-```bash
-npm install --save-dev file-loader
+```shell
+yarn add card-loader -D
 ```
 
-<h2 align="center"><a href="https://webpack.js.org/concepts/loaders">Usage</a></h2>
+使用 loader：
 
-By default the filename of the resulting file is the MD5 hash of the file's contents with the original extension of the required resource.
+```javascript
+// 引入路径为./card/index.js的浮层
+const card = require("card-loader!./card/index.js");
 
-```js
-import img from './file.png'
-```
-
-**webpack.config.js**
-```js
-module.exports = {
-  module: {
-    rules: [
-      {
-        test: /\.(png|jpg|gif)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {}  
-          }
-        ]
-      }
-    ]
+const param = {
+  display: {
+    opacity: 0.5
+  },
+  message: {},
+  success(data) {
+    console.log("success", data)
+  },
+  error(opt, errMessage) {
+    console.log("err", errMessage, opt);
   }
 }
+
+// 参数的配置path字段外遵循 http://wiki.intra.sina.com.cn/pages/viewpage.action?pageId=166466748
+card.show(param)
 ```
 
-Emits `file.png` as file in the output directory and returns the public URL
+## 浮层模块的开发
 
-```
-"/public/path/0dcbbaa7013869e351f.png"
-```
+先看一个最简单的例子：
 
-<h2 align="center">Options</h2>
+```javascript
+//./card/index.js文件（浮层入口）
 
-|Name|Type|Default|Description|
-|:--:|:--:|:-----:|:----------|
-|**`name`**|`{String\|Function}`|`[hash].[ext]`|Configure a custom filename template for your file|
-|**`regExp`**|`{RegExp}`|`'undefined'`|Let you extract some parts of the file path to reuse them in the `name` property|
-|**`context`**|`{String}`|`this.options.context`|Configure a custom file context, defaults to `webpack.config.js` [context](https://webpack.js.org/configuration/entry-context/#context)|
-|**`publicPath`**|`{String\|Function}`|[`__webpack_public_path__ `](https://webpack.js.org/api/module-variables/#__webpack_public_path__-webpack-specific-)|Configure a custom `public` path for your file|
-|**`outputPath`**|`{String\|Function}`|`'undefined'`|Configure a custom `output` path for your file|
-|**`useRelativePath`**|`{Boolean}`|`false`|Should be `true` if you wish to generate a `context` relative URL for each file|
-|**`emitFile`**|`{Boolean}`|`true`|By default a file is emitted, however this can be disabled if required (e.g. for server side packages)|
+/**
+ * 模块暴露一个名称为card的函数，接收三个参数
+ * 使用函数声明的原因是 在抹平差异同时需要传递参数给业务人员
+ * 函数会在hybrid的ready生命周期后执行，并注入参数
+ * 
+ * @export
+ * @param {object} data 从主view传递过来的参数(实际为ready方法触发传递的参数)
+ * @param {object} {
+ *   closeModal
+ * } 注入的变量和方法，目前只有closeModal方法，调用则关闭当前浮层
+ * @param {string} container 渲染的容器id
+ * @returns {object} {show: function} 
+ * 函数返回对象中包含键为show的方法，内部执行浮层渲染、显示，业务人员需要实现此方法
+ */
+export default function(data, inject, containerId) {
 
-### `name`
+  // 处理数据
+  output = processData(data)
 
-You can configure a custom filename template for your file using the query parameter `name`. For instance, to copy a file from your `context` directory into the output directory retaining the full directory structure, you might use
-
-#### `{String}`
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[path][name].[ext]'
-  }  
-}
-```
-
-#### `{Function}`
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name (file) {
-      if (env === 'development') {
-        return '[path][name].[ext]'
-      }
-
-      return '[hash].[ext]'
+  return {
+    show() {
+      renderModal(output, inject, containerId)
     }
-  }  
+  };
 }
+
+function renderModal(data, inject, containerId) {
+
+  // use data
+  console.log(data)
+
+  const container = document.getElementById(containerId);
+
+  const button = document.createElement("button");
+
+  const destroy = () => {...}
+
+  button.addEventListener("click", () => {
+
+    // closeModal为注入的关闭弹层方法
+    // 可选：这里可以传递一个destroy方法，该方法由业务实现，主要目的是在web环境中，进行垃圾回收（⌚事件销毁，实例化对象释放等）
+    inject.closeModal(destroy)
+  });
+
+  container.appendChild(button);
+}
+
 ```
 
-### `regExp`
+如注释，模块只规定通过export default输出一个方法，该方法接收三个参数，并且返回一个含有show方法的对象。
 
-Defines a `regExp` to match some parts of the file path. These capture groups can be reused in the `name` property using `[N]` placeholder. Note that `[0]` will be replaced by the entire tested string, whereas `[1]` will contain the first capturing parenthesis of your regex and so on...
+show方法完成模块渲染。
 
-```js
-import img from './customer01/file.png'
-```
+>注意：
+>当使用`card-loader`加载代码时，客户端的浮层代码会以一个单独的页面存在。
+>换句话说在编译页面同时会以loader为入口文件执行webpack构建弹层页面。
+>因此弹层使用的各种资源文件（包含但不限于js、css）需要直接或间接的被浮层入口文件引入
 
-**webpack.config.js**
-```js
+### `manifest.json`文件
+
+由于需要对每个浮层进行唯一标示，需要在浮层入口代码的同级目录创建一个`manifest.json`文件：
+
+```json
 {
-  loader: 'file-loader',
-  options: {
-    regExp: /\/([a-z0-9]+)\/[a-z0-9]+\.png$/,
-    name: '[1]-[name].[ext]'
-  }  
+  "name": "card-name"
 }
 ```
-
-```
-customer01-file.png
-```
-
-#### `placeholders`
-
-|Name|Type|Default|Description|
-|:--:|:--:|:-----:|:----------|
-|**`[ext]`**|`{String}`|`file.extname`|The extension of the resource|
-|**`[name]`**|`{String}`|`file.basename`|The basename of the resource|
-|**`[path]`**|`{String}`|`file.dirname`|The path of the resource relative to the `context`|
-|**`[hash]`**|`{String}`|`md5`|The hash of the content, hashes below for more info|
-|**`[N]`**|`{String}`|``|The `n-th` match obtained from matching the current file name against the `regExp`|
-
-#### `hashes`
-
-`[<hashType>:hash:<digestType>:<length>]` optionally you can configure
-
-|Name|Type|Default|Description|
-|:--:|:--:|:-----:|:----------|
-|**`hashType`**|`{String}`|`md5`|`sha1`, `md5`, `sha256`, `sha512`|
-|**`digestType`**|`{String}`|`hex`|`hex`, `base26`, `base32`, `base36`, `base49`, `base52`, `base58`, `base62`, `base64`|
-|**`length`**|`{Number}`|`9999`|The length in chars|
-
-By default, the path and name you specify will output the file in that same directory and will also use that same URL path to access the file.
-
-### `context`
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[path][name].[ext]',
-    context: ''
-  }  
-}
-```
-
-You can specify custom `output` and `public` paths by using `outputPath`, `publicPath` and `useRelativePath`
-
-### `publicPath`
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[path][name].[ext]',
-    publicPath: 'assets/'
-  }  
-}
-```
-
-### `outputPath`
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[path][name].[ext]',
-    outputPath: 'images/'
-  }  
-}
-```
-
-### `useRelativePath`
-
-`useRelativePath` should be `true` if you wish to generate a relative URL to the for each file context.
-
-```js
-{
-  loader: 'file-loader',
-  options: {
-    useRelativePath: process.env.NODE_ENV === "production"
-  }
-}
-```
-
-### `emitFile`
-
-By default a file is emitted, however this can be disabled if required (e.g. for server side packages).
-
-```js
-import img from './file.png'
-```
-
-```js
-{
-  loader: 'file-loader',
-  options: {
-    emitFile: false
-  }  
-}
-```
-
-> ⚠️  Returns the public URL but does **not** emit a file
-
-```
-`${publicPath}/0dcbbaa701328e351f.png`
-```
-
-<h2 align="center">Examples</h2>
-
-
-```js
-import png from 'image.png'
-```
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: 'dirname/[hash].[ext]'
-  }  
-}
-```
-
-```
-dirname/0dcbbaa701328ae351f.png
-```
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[sha512:hash:base64:7].[ext]'
-  }  
-}
-```
-
-```
-gdyb21L.png
-```
-
-```js
-import png from 'path/to/file.png'
-```
-
-**webpack.config.js**
-```js
-{
-  loader: 'file-loader',
-  options: {
-    name: '[path][name].[ext]?[hash]'
-  }  
-}
-```
-
-```
-path/to/file.png?e43b20c069c4a01867c31e98cbce33c9
-```
-
-<h2 align="center">Maintainers</h2>
-
-<table>
-  <tbody>
-    <tr>
-      <td align="center">
-        <a href="https://github.com/bebraw">
-          <img width="150" height="150" src="https://github.com/bebraw.png?v=3&s=150">
-          </br>
-          Juho Vepsäläinen
-        </a>
-      </td>
-      <td align="center">
-        <a href="https://github.com/d3viant0ne">
-          <img width="150" height="150" src="https://github.com/d3viant0ne.png?v=3&s=150">
-          </br>
-          Joshua Wiens
-        </a>
-      </td>
-      <td align="center">
-        <a href="https://github.com/michael-ciniawsky">
-          <img width="150" height="150" src="https://github.com/michael-ciniawsky.png?v=3&s=150">
-          </br>
-          Michael Ciniawsky
-        </a>
-      </td>
-      <td align="center">
-        <a href="https://github.com/evilebottnawi">
-          <img width="150" height="150" src="https://github.com/evilebottnawi.png?v=3&s=150">
-          </br>
-          Alexander Krasnoyarov
-        </a>
-      </td>
-    </tr>
-  <tbody>
-</table>
-
-
-[npm]: https://img.shields.io/npm/v/file-loader.svg
-[npm-url]: https://npmjs.com/package/file-loader
-
-[node]: https://img.shields.io/node/v/file-loader.svg
-[node-url]: https://nodejs.org
-
-[deps]: https://david-dm.org/webpack-contrib/file-loader.svg
-[deps-url]: https://david-dm.org/webpack-contrib/file-loader
-
-[tests]: http://img.shields.io/travis/webpack-contrib/file-loader.svg
-[tests-url]: https://travis-ci.org/webpack-contrib/file-loader
-
-[cover]: https://img.shields.io/codecov/c/github/webpack-contrib/file-loader.svg
-[cover-url]: https://codecov.io/gh/webpack-contrib/file-loader
-
-[chat]: https://badges.gitter.im/webpack/webpack.svg
-[chat-url]: https://gitter.im/webpack/webpack
+如果没有此文件，编译时会报错。
