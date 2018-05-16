@@ -52,7 +52,7 @@ function loader(content) {
     out += `module.exports = {
       show(param) {
 
-        if (!param || typeof data !== "object") {
+        if (!param || typeof param !== "object") {
           throw new Error("参数不存在或非对象！")
         }
 
@@ -141,12 +141,12 @@ function loader(content) {
           console.log(appSNC);
           module.exports = {
             show: function(param) {
-              console.log("__card loader log__")
-              var fParam = {}
-              Object.assign(fParam, {
-                path: "modal/${cardName}/index.html"
-              }, param);
-              appSNC.showWVModal(fParam);
+              if (!param || typeof param !== "object") {
+                throw new Error("show方法参数不存在或非对象！")
+              }
+              param.path = "modal/${cardName}/index.html"
+
+              appSNC.showWVModal(param);
             }
           }`;
 
