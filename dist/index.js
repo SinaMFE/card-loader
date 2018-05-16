@@ -213,7 +213,12 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
   );
 
   // webpackConfig.entry = tempSrcFilePath;
-  webpackConfig.entry.index.splice(-1, 1, tempSrcFilePath)
+
+  const webpackEntry = [];
+  webpackEntry.push(path.resolve("./node_modules/webpack-marauder/webpack/polyfills.js"))
+  webpackEntry.push(tempSrcFilePath);
+
+  webpackConfig.entry.index = webpackEntry;
 
   webpackConfig.output.path = path.resolve(
     appDirectory,
