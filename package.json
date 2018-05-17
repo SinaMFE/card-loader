@@ -8,7 +8,9 @@
     "node": ">= 4.3 < 5.0.0 || >= 5.10"
   },
   "main": "dist/cjs.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "dependencies": {
     "duplicate-package-checker-webpack-plugin": "^2.1.0",
     "extract-text-webpack-plugin": "^3.0.2",
@@ -49,6 +51,9 @@
   "bugs": "",
   "pre-commit": "lint-staged",
   "lint-staged": {
-    "*.js": ["eslint --fix", "git add"]
+    "*.js": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }

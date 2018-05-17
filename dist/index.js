@@ -45,7 +45,7 @@ function loader(content) {
 
     out += `var _a = require("${filePath}").default;`;
     out += jsRuntime;
-    out += `module.exports = {
+    out += `export default {
       show(param) {
 
         if (!param || typeof param !== "object") {
@@ -128,11 +128,10 @@ function loader(content) {
         const modalPath = `modal/${cardName}/index.html`;
 
         out = `
-          var appSNC = require("@mfelibs/universal-framework").default;
+          import appSNC from '@mfelibs/universal-framework';
+          import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
 
-          var showWVModal = require("@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal").default;
-
-          appSNC.mountApi("appApis", {
+          appSNC.mountApi('appApis', {
             showWVModal
           });
 
@@ -143,12 +142,12 @@ function loader(content) {
             onlinePath = process.env.PUBLIC_URL + '/${modalPath}'
           }
 
-          module.exports = {
+          export default {
             show: function(param) {
-              if (!param || typeof param !== "object") {
+              if (!param || typeof param !== 'object') {
                 throw new Error("show方法参数不存在或非对象！")
               }
-              param.path = "modal/${cardName}/index.html"
+              param.path = 'modal/${cardName}/index.html'
 
               if(onlinePath.indexOf('http') > -1) {
                 param.onlinePath = onlinePath
@@ -197,17 +196,17 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
   }
 
   const code = `
-    var _a = require("${filePath}").default;
-    var appSNC = require("@mfelibs/universal-framework").default;
-    require("@mfelibs/universal-framework/src/libs/apis/closeWindow");
-    require("@mfelibs/universal-framework/src/libs/apis/onRendered");
+    import card from '${filePath}';
+    import appSNC from '@mfelibs/universal-framework';
+    import '@mfelibs/universal-framework/src/libs/apis/closeWindow';
+    import '@mfelibs/universal-framework/src/libs/apis/onRendered';
 
     function closeModal() {
       appSNC.closeWindow()
     }
 
     appSNC.ready(function(data) {
-      _a(data, {closeModal: closeModal}, "root").show()
+      card(data, {closeModal: closeModal}, "root").show()
       appSNC.onRendered();
     })
 
