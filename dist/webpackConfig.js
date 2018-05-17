@@ -1,15 +1,20 @@
-"use strict";
+'use strict';
 
-const fs = require("fs");
-const webpack = require("webpack");
-const merge = require("webpack-merge");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-const OptimizeCssAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const DuplicatePackageCheckerPlugin = require("duplicate-package-checker-webpack-plugin");
+const fs = require('fs');
+const webpack = require('webpack');
+const merge = require('webpack-merge');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin');
 
-const config = require("webpack-marauder/config");
-const { banner, rootPath, getChunks, isObject } = require("webpack-marauder/libs/utils");
+const config = require('webpack-marauder/config');
+const {
+  banner,
+  rootPath,
+  getChunks,
+  isObject
+} = require('webpack-marauder/libs/utils');
 
 const maraConf = require(config.paths.marauder);
 const shouldUseSourceMap = !!maraConf.sourceMap;
@@ -24,7 +29,9 @@ const compress = Object.assign(config.compress, maraConf.compress);
  */
 module.exports = function({ entry, cmd }) {
   const distPageDir = `${config.paths.dist}/${entry}`;
-  const baseWebpackConfig = require("webpack-marauder/webpack/webpack.base.conf")(entry);
+  const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')(
+    entry
+  );
   const hasHtml = fs.existsSync(`${config.paths.page}/${entry}/index.html`);
   const chunksEntry = getChunks(`src/view/${entry}/index.*.js`);
 
@@ -32,17 +39,18 @@ module.exports = function({ entry, cmd }) {
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: true,
-    devtool: shouldUseSourceMap ? "source-map" : false,
+    devtool: shouldUseSourceMap ? 'source-map' : false,
     entry: chunksEntry,
+    watch: false,
     output: {
       path: distPageDir,
       publicPath: config.build.assetsPublicPath,
       filename: maraConf.hash
-        ? "static/js/[name].[chunkhash:8].min.js"
-        : "static/js/[name].min.js",
+        ? 'static/js/[name].[chunkhash:8].min.js'
+        : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
-        ? "static/js/[name].[chunkhash:8].async.js"
-        : "static/js/[name].async.js"
+        ? 'static/js/[name].[chunkhash:8].async.js'
+        : 'static/js/[name].async.js'
     },
     plugins: [
       new webpack.DefinePlugin(config.build.env.stringified),
@@ -88,8 +96,8 @@ module.exports = function({ entry, cmd }) {
       // }),
       new ExtractTextPlugin({
         filename: maraConf.hash
-          ? "static/css/[name].[contenthash:8].css"
-          : "static/css/[name].min.css"
+          ? 'static/css/[name].[contenthash:8].css'
+          : 'static/css/[name].min.css'
       }),
 
       new OptimizeCssAssetsPlugin({
@@ -116,7 +124,7 @@ module.exports = function({ entry, cmd }) {
         emitError: true,
         // check major version
         strict: true
-      }),
+      })
     ].filter(Boolean)
   });
 
@@ -126,4 +134,3 @@ module.exports = function({ entry, cmd }) {
 
   return webpackConfig;
 };
-

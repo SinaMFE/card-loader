@@ -12,11 +12,18 @@
     "dist"
   ],
   "dependencies": {
-    "@mfelibs/universal-framework": "^0.3.42",
-    "wintip": "^1.4.0"
+    "duplicate-package-checker-webpack-plugin": "^2.1.0",
+    "extract-text-webpack-plugin": "^3.0.2",
+    "fs-extra": "^6.0.1",
+    "glob": "^7.1.2",
+    "loader-utils": "^1.1.0",
+    "memory-fs": "^0.4.1",
+    "optimize-css-assets-webpack-plugin": "^3.2.0",
+    "schema-utils": "^0.4.5",
+    "webpack-marauder": "^1.10.4",
+    "webpack-merge": "^4.1.2"
   },
   "devDependencies": {
-    "glob": "^7.1.2",
     "babel-cli": "^6.0.0",
     "babel-jest": "^21.0.0",
     "babel-plugin-transform-object-rest-spread": "^6.0.0",
@@ -26,40 +33,22 @@
     "del": "^3.0.0",
     "del-cli": "^1.0.0",
     "eslint": "^4.0.0",
+    "eslint-config-sinamfe": "^1.0.3",
     "eslint-config-webpack": "^1.0.0",
     "eslint-plugin-import": "^2.0.0",
     "jest": "^21.0.0",
     "lint-staged": "^5.0.0",
-    "memory-fs": "^0.4.0",
-    "nsp": "^2.0.0",
     "pre-commit": "^1.0.0",
     "standard-version": "^4.0.0",
-    "webpack": "^3.0.0",
-    "webpack-defaults": "^1.6.0"
+    "wintip": "^1.4.0"
   },
   "peerDependencies": {
-    "webpack": "^2.0.0 || ^3.0.0 || ^4.0.0"
+    "@mfelibs/universal-framework": "^0.3.42",
+    "webpack": "^3.10.0"
   },
-  "scripts": {
-    "start": "npm run build -- -w",
-    "appveyor:test": "npm run test",
-    "build": "cross-env NODE_ENV=production babel src -d dist --ignore 'src/**/*.test.js' --copy-files",
-    "lint": "eslint --cache src test",
-    "lint-staged": "lint-staged",
-    "prebuild": "npm run clean",
-    "release": "standard-version",
-    "security": "nsp check",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:coverage": "jest --collectCoverageFrom='src/**/*.js' --coverage",
-    "travis:lint": "npm run lint && npm run security",
-    "travis:test": "npm run test -- --runInBand",
-    "travis:coverage": "npm run test:coverage -- --runInBand",
-    "webpack-defaults": "webpack-defaults"
-  },
-  "repository": "https://github.com/webpack/file-loader.git",
-  "bugs": "https://github.com/webpack/file-loader/issues",
-  "homepage": "https://webpack.js.org/loaders/file-loader",
+  "scripts": {},
+  "repository": "",
+  "bugs": "",
   "pre-commit": "lint-staged",
   "lint-staged": {
     "*.js": [
