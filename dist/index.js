@@ -43,28 +43,27 @@ function loader(content) {
   if (isWap) {
     const jsRuntime = fs.readFileSync(path.join(__dirname, './web.runtime.js'));
 
-    out += `var _a = require("${filePath}").default;`;
+    out += `import card from '${filePath}';`;
     out += jsRuntime;
     out += `export default {
       show(param) {
-
-        if (!param || typeof param !== "object") {
-          throw new Error("参数不存在或非对象！")
+        if (!param || typeof param !== 'object') {
+          throw new Error('参数不存在或非对象！')
         }
 
         var data = param.data
-        if (!data || typeof data !== "object") {
+        if (!data || typeof data !== 'object') {
           data = {}
         }
         var display = param.display
-        if (!display || typeof display !== "object") {
+        if (!display || typeof display !== 'object') {
           display = {};
           display.opacity = 0;
-          display.backgroundColor = "black";
+          display.backgroundColor = 'black';
         }
         addLayer(display.backgroundColor, display.opacity)
 
-        _a(data, {
+        card(data, {
           closeModal: function(cb) {
             cb && cb()
             removeLayer()
