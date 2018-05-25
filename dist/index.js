@@ -194,6 +194,7 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
     // fs.mkdirSync(tempSrcFilePath);
   }
 
+  // 除了模块化以外使用 es5 编写
   const code = `
     import card from '${filePath}';
     import appSNC from '@mfelibs/universal-framework';
@@ -208,8 +209,6 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
       card(data, {closeModal: closeModal}, "root").show()
       appSNC.onRendered();
     })
-
-    appSNC.onRendered();
     `;
 
   // 创建临时文件
