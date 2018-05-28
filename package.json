@@ -1,14 +1,14 @@
 {
   "name": "card-loader",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "author": "huguang",
   "description": "card loader module for webpack marauder",
   "license": "MIT",
   "engines": {
-    "node": ">= 4.3 < 5.0.0 || >= 5.10"
+    "node": ">= 5.10"
   },
-  "main": "dist/cjs.js",
-  "files": ["dist"],
+  "main": "lib/cjs.js",
+  "files": ["lib"],
   "dependencies": {
     "duplicate-package-checker-webpack-plugin": "^2.1.0",
     "extract-text-webpack-plugin": "^3.0.2",
@@ -18,37 +18,21 @@
     "memory-fs": "^0.4.1",
     "optimize-css-assets-webpack-plugin": "^3.2.0",
     "schema-utils": "^0.4.5",
+    "webpack": "^3.12.0",
     "webpack-marauder": "^1.10.4",
     "webpack-merge": "^4.1.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.0.0",
-    "babel-jest": "^21.0.0",
-    "babel-plugin-transform-object-rest-spread": "^6.0.0",
-    "babel-polyfill": "^6.0.0",
-    "babel-preset-env": "^1.0.0",
-    "cross-env": "^5.0.0",
-    "del": "^3.0.0",
-    "del-cli": "^1.0.0",
-    "eslint": "^4.0.0",
     "eslint-config-sinamfe": "^1.0.3",
-    "eslint-config-webpack": "^1.0.0",
-    "eslint-plugin-import": "^2.0.0",
     "jest": "^21.0.0",
     "lint-staged": "^5.0.0",
     "pre-commit": "^1.0.0",
-    "standard-version": "^4.0.0",
-    "wintip": "^1.4.0"
+    "standard-version": "^4.0.0"
   },
   "peerDependencies": {
-    "@mfelibs/universal-framework": "^0.3.42",
-    "webpack": "^3.10.0"
+    "@mfelibs/universal-framework": "^0.3.42"
   },
   "scripts": {},
   "repository": "",
-  "bugs": "",
-  "pre-commit": "lint-staged",
-  "lint-staged": {
-    "*.js": ["eslint --fix", "git add"]
-  }
+  "bugs": ""
 }
