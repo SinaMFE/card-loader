@@ -1,30 +1,24 @@
 'use strict';
 
-exports.__esModule = true;
-exports.default = void 0;
+import fs from 'fs-extra';
+import path from 'path';
+import glob from 'glob';
+import MemoryFS from 'memory-fs';
+import webpack from 'webpack';
+import getWebpackConfig from './webpackConfig.js';
 
-var _fsExtra = _interopRequireDefault(require("fs-extra"));
-
-var _path = _interopRequireDefault(require("path"));
-
-var _glob = _interopRequireDefault(require("glob"));
-
-var _memoryFs = _interopRequireDefault(require("memory-fs"));
-
-var _webpack = _interopRequireDefault(require("webpack"));
-
-var _webpackConfig = _interopRequireDefault(require("./webpackConfig.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const mfs = new _memoryFs.default();
-
-const appDirectory = _fsExtra.default.realpathSync(process.cwd());
+const mfs = new MemoryFS();
+const appDirectory = fs.realpathSync(process.cwd());
 
 const isApp = process.env.jsbridgeBuildType == 'app';
-const isWap = process.env.jsbridgeBuildType == 'wap' || process.env.jsbridgeBuildType == 'web';
+const isWap =
+  process.env.jsbridgeBuildType == 'wap' ||
+  process.env.jsbridgeBuildType == 'web';
+
 const cardModuleMap = {};
+
 let cardModuleId = 0;
+
 const cardDistRootPath = 'card';
 
 function loader(source) {
@@ -36,13 +30,14 @@ function loader(source) {
   let promise;
 
   if (!(cardName in cardModuleMap)) {
-    cardModuleMap[cardName] = cardModuleId; // cardModuleId++;
+    cardModuleMap[cardName] = cardModuleId;
+    // cardModuleId++;
   } else if (process.env.NODE_ENV == 'production') {
     throw new Error('[card-loader] 命名重复，已有模块命名为' + cardName);
   }
 
   if (isWap) {
-    const jsRuntime = _fsExtra.default.readFileSync(_path.default.join(__dirname, './web.runtime.js'));
+    const jsRuntime = fs.readFileSync(path.join(__dirname, './web.runtime.js'));
 
     result += `import card from '${filePath}';`;
     result += jsRuntime;
@@ -72,26 +67,25 @@ function loader(source) {
         }, rootId).show();
       }
     };`;
+
     promise = Promise.resolve();
   } else if (isApp) {
     const rootDir = appDirectory;
-    promise = BundleCardAssets(filePath, cardModuleId++, cardName).then(({
-      cardModuleId,
-      cardName,
-      stats
-    }) => {
-      const htmlContent = require('./htmlTemplate');
+    promise = BundleCardAssets(filePath, cardModuleId++, cardName)
+      .then(({ cardModuleId, cardName, stats }) => {
+        const htmlContent = require('./htmlTemplate');
+        const destCardValidDir = path.posix.join('modal', cardName);
+        const htmlDir = path.posix.join(destCardValidDir, 'index.html');
 
-      const destCardValidDir = _path.default.posix.join('modal', cardName);
+        self.emitFile(htmlDir, htmlContent);
 
-      const htmlDir = _path.default.posix.join(destCardValidDir, 'index.html');
+        Object.keys(stats.compilation.assets).forEach(asset => {
+          this.emitFile(`${destCardValidDir}/${asset}`, stats.compilation.assets[asset].source());
+        })
 
-      self.emitFile(htmlDir, htmlContent);
-      Object.keys(stats.compilation.assets).forEach(asset => {
-        this.emitFile(`${destCardValidDir}/${asset}`, stats.compilation.assets[asset].source());
-      });
-      const modalPath = `modal/${cardName}/index.html`;
-      result = `
+        const modalPath = `modal/${cardName}/index.html`;
+
+        result = `
           import appSNC from '@mfelibs/universal-framework';
           import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
 
@@ -120,25 +114,28 @@ function loader(source) {
               appSNC.showWVModal(param);
             }
           }`;
-    }); // .then(clean);
+      })
+      // .then(clean);
   } else {
     throw new Error('[card-loader] 请指定 globalEnv.jsbridgeBuildType');
   }
 
-  promise.then(() => {
-    callback(null, result);
-  }).catch(e => {
-    throw new Error(e);
-  });
+  promise
+    .then(() => {
+      callback(null, result);
+    })
+    .catch(e => {
+      throw new Error(e);
+    });
 }
 
 function BundleCardAssets(filePath, cardModuleId, cardName) {
-  cardModuleId = cardModuleId.toString(); // const tempSrcFilePath = `/__card__/${cardModuleId}/tmp.js`
-
-  let webpackConfig = (0, _webpackConfig.default)({
+  cardModuleId = cardModuleId.toString();
+  // const tempSrcFilePath = `/__card__/${cardModuleId}/tmp.js`
+  let webpackConfig = getWebpackConfig({
     entry: 'index'
-  }); // 除了模块化以外使用 es5 编写
-
+  });
+  // 除了模块化以外使用 es5 编写
   const code = `
     import card from '${filePath}';
     import appSNC from '@mfelibs/universal-framework';
@@ -155,25 +152,38 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
     })
     `;
 
-  const tempSrcPath = _path.default.resolve(appDirectory, _path.default.join('build/card/', cardModuleId));
+  const tempSrcPath = path.resolve(
+    appDirectory,
+    path.join('build/card/', cardModuleId)
+  );
 
-  if (!_fsExtra.default.existsSync(tempSrcPath)) {
-    _fsExtra.default.mkdirpSync(tempSrcPath);
+  if (!fs.existsSync(tempSrcPath)) {
+    fs.mkdirpSync(tempSrcPath);
   }
 
-  const tempSrcFilePath = _path.default.resolve(tempSrcPath, 'index.js'); // 创建临时文件
+  const tempSrcFilePath = path.resolve(tempSrcPath, 'index.js');
 
+  // 创建临时文件
+  fs.writeFileSync(tempSrcFilePath, code);
 
-  _fsExtra.default.writeFileSync(tempSrcFilePath, code);
+  webpackConfig.entry.index = [
+    path.resolve('./node_modules/webpack-marauder/webpack/polyfills.js'),
+    tempSrcFilePath
+  ];
 
-  webpackConfig.entry.index = [_path.default.resolve('./node_modules/webpack-marauder/webpack/polyfills.js'), tempSrcFilePath];
-  webpackConfig.output.path = _path.default.resolve(appDirectory, _path.default.join('build/card/', cardModuleId));
-  const compiler = (0, _webpack.default)(webpackConfig); // 使用内存文件系统，构建后通过 stats 获取结果
+  webpackConfig.output.path = path.resolve(
+    appDirectory,
+    path.join('build/card/', cardModuleId)
+  );
 
+  const compiler = webpack(webpackConfig);
+  // 使用内存文件系统，构建后通过 stats 获取结果
   compiler.outputFileSystem = mfs;
+
   return new Promise((resolve, reject) => {
     compiler.run((err, stats) => {
       if (err) return reject(err);
+
       resolve({
         cardModuleId,
         cardName,
@@ -184,17 +194,17 @@ function BundleCardAssets(filePath, cardModuleId, cardName) {
 }
 
 function getCardNameFromManifest(loaderContext) {
-  var manifestPath = _path.default.join(loaderContext.context, 'manifest.json');
-
+  var manifestPath = path.join(loaderContext.context, 'manifest.json');
   let loaderName = '';
 
-  if (_fsExtra.default.existsSync(manifestPath) != true) {
-    throw new Error('[card-loader] 没有找到card对应的manifest.json，在card入口文件同目录建立manifest.json文件');
+  if (fs.existsSync(manifestPath) != true) {
+    throw new Error(
+      '[card-loader] 没有找到card对应的manifest.json，在card入口文件同目录建立manifest.json文件'
+    );
   }
 
   try {
     const manifest = require(manifestPath);
-
     loaderName = manifest.name; //打包的时候输出目录用
   } catch (ex) {
     throw new Error('[card-loader] card对应manifest识别失败！');
@@ -207,20 +217,16 @@ function getCardNameFromManifest(loaderContext) {
   return loaderName;
 }
 
-function clean({
-  rootDir,
-  cardModuleId
-}) {
-  const tempDir = _path.default.resolve(rootDir, _path.default.join('build/card/', cardModuleId));
+function clean({ rootDir, cardModuleId }) {
+  const tempDir = path.resolve(rootDir, path.join('build/card/', cardModuleId));
 
-  const distDir = _path.default.resolve(rootDir, 'dist' + cardModuleId);
+  const distDir = path.resolve(rootDir, 'dist' + cardModuleId);
 
-  if (_fsExtra.default.existsSync(tempDir)) {
-    return Promise.all([_fsExtra.default.emptyDir(tempDir)]).then(() => {
-      _fsExtra.default.rmdirSync(tempDir);
+  if (fs.existsSync(tempDir)) {
+    return Promise.all([fs.emptyDir(tempDir)]).then(() => {
+      fs.rmdirSync(tempDir);
     });
   }
 }
 
-var _default = loader;
-exports.default = _default;
+export default loader;
