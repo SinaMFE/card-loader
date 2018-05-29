@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "0.0.21-alpha.2",
+  "version": "0.0.21-alpha.4",
   "author": "huguang",
   "description": "card loader module for webpack marauder",
   "license": "MIT",
