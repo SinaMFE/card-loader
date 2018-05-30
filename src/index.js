@@ -7,6 +7,7 @@ import build from './build';
 import loaderResult from './result';
 import htmlContent from './template/html';
 
+const isProd = process.env.NODE_ENV === 'production'
 const isWap =
   process.env.jsbridgeBuildType === 'wap' ||
   process.env.jsbridgeBuildType === 'web';
@@ -19,7 +20,7 @@ function loader(source) {
   const cardName = getCardNameFromManifest(this);
   const resourceStr = stringifyRequest(this, this.resourcePath);
 
-  if (cardNamePool.includes(cardName)) {
+  if (isProd && cardNamePool.includes(cardName)) {
     throw new Error('[card-loader] 命名重复，已有模块命名为 ' + cardName);
   } else {
     cardNamePool.push(cardName);
