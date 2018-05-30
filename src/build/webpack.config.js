@@ -1,22 +1,18 @@
 'use strict';
 
-const webpack = require('webpack');
-const merge = require('webpack-merge');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin');
-
-const config = require('webpack-marauder/config');
-const {
-  banner,
-  rootPath,
-  getChunks,
-  isObject
-} = require('webpack-marauder/libs/utils');
+import webpack from 'webpack';
+import path from 'path';
+import merge from 'webpack-merge';
+import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
+import ExtractTextPlugin from 'extract-text-webpack-plugin';
+import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
+import DuplicatePackageCheckerPlugin from 'duplicate-package-checker-webpack-plugin';
+import config from 'webpack-marauder/config';
+import { banner } from 'webpack-marauder/libs/utils';
 
 const maraConf = require(config.paths.marauder);
 const shouldUseSourceMap = !!maraConf.sourceMap;
+const isProd = process.env.NODE_ENV === 'production'
 // 压缩配置
 const compress = Object.assign(config.compress, maraConf.compress);
 
@@ -26,37 +22,34 @@ const compress = Object.assign(config.compress, maraConf.compress);
  * @param  {String} options.cmd   当前命令
  * @return {Object}               webpack 配置对象
  */
-module.exports = function({ entry, cmd }) {
-  const distPageDir = `${config.paths.dist}/${entry}`;
-  const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')(
-    entry
-  );
-  const chunksEntry = getChunks(`src/view/${entry}/index.*.js`);
+export default function(resource) {
+  const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')('index');
+  const entry = `${path.resolve(__dirname, './cardLoader.js')}!${resource}`
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {
     // 在第一个错误出错时抛出，而不是无视错误
-    bail: true,
-    devtool: shouldUseSourceMap ? 'source-map' : false,
-    entry: chunksEntry,
+    bail: isProd,
+    entry,
+    devtool: isProd ? shouldUseSourceMap ? 'source-map' : false : 'cheap-module-source-map',
     watch: false,
     output: {
-      path: distPageDir,
       publicPath: config.build.assetsPublicPath,
       filename: maraConf.hash
         ? 'static/js/[name].[chunkhash:8].min.js'
         : 'static/js/[name].min.js',
       chunkFilename: maraConf.chunkHash
         ? 'static/js/[name].[chunkhash:8].async.js'
-        : 'static/js/[name].async.js'
+        : 'static/js/[name].async.js',
+      pathinfo: !isProd
     },
     plugins: [
-      new webpack.DefinePlugin(config.build.env.stringified),
+      new webpack.DefinePlugin(isProd ? config.build.env.stringified : config.dev.env.stringified),
       // 使作作用域提升(scope hoisting)
       // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
-      new webpack.optimize.ModuleConcatenationPlugin(),
+      isProd && new webpack.optimize.ModuleConcatenationPlugin(),
       // Minify the code.
-      new UglifyJsPlugin({
+      isProd && new UglifyJsPlugin({
         uglifyOptions: {
           // 强制使用 es5 压缩输出，避免 es6 优化导致兼容性问题
           ecma: 5,
@@ -92,13 +85,13 @@ module.exports = function({ entry, cmd }) {
       //   'window.Zepto': 'zepto',
       //   'window.$': 'zepto'
       // }),
-      new ExtractTextPlugin({
+      isProd && new ExtractTextPlugin({
         filename: maraConf.hash
           ? 'static/css/[name].[contenthash:8].css'
           : 'static/css/[name].min.css'
       }),
-
-      new OptimizeCssAssetsPlugin({
+      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      isProd && new OptimizeCssAssetsPlugin({
         // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
         // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
         // safe: true 禁止计算 z-index
@@ -112,18 +105,23 @@ module.exports = function({ entry, cmd }) {
         ),
         canPrint: false // 不显示通知
       }),
-      // 【争议】：lib 模式禁用依赖分析?
-      // 确保在 copy Files 之前
       new DuplicatePackageCheckerPlugin({
         // show details
         verbose: true,
         showHelp: false,
         // throwt error
-        emitError: true,
+        emitError: isProd,
         // check major version
         strict: true
-      })
-    ].filter(Boolean)
+      }),
+      new webpack.BannerPlugin({
+        banner: banner(), // 其值为字符串，将作为注释存在
+        entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
+      }),
+    ].filter(Boolean),
+    performance: {
+      hints: isProd
+    }
   });
 
   // webpackConfig.plugins.push(new CardPlugin());
@@ -131,4 +129,4 @@ module.exports = function({ entry, cmd }) {
   // 重要：确保 zip plugin 在插件列表末尾
 
   return webpackConfig;
-};
+}

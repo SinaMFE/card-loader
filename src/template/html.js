@@ -1,13 +1,12 @@
-"use strict";
-
-module.exports = `<!DOCTYPE html>
+export default `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="author" content="sina_mobile">
+  <meta name="format-detection" content="telephone=no">
   <title>Document</title>
-  <link href="./static/css/index.min.css" rel="stylesheet">
+  <link href="./static/css/main.min.css" rel="stylesheet">
   <script type="text/javascript">
     ! function (w, d, m) {
       function r() {
@@ -21,14 +20,12 @@ module.exports = `<!DOCTYPE html>
           h + "px"
       };
       r();
-      w.onresize = function () {
-        r()
-      }
+      w.onresize = r
     }(window, document, Math);
   </script>
 </head>
 <body>
   <div id="root"></div>
-  <script src="./static/js/index.min.js"></script>
+  <script src="./static/js/main.min.js"></script>
 </body>
 </html>`;
