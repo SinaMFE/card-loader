@@ -13,8 +13,14 @@ export default function(source) {
     }
 
     appSNC.ready(function(data) {
-      card(data, {closeModal: closeModal}, "root").show()
-      appSNC.onRendered()
+      data.message = data.message || {}
+
+      try {
+        card(data, { closeModal: closeModal }, 'root').show()
+        appSNC.onRendered()
+      } catch(e) {
+        console.error('[card error]', e)
+      }
     })
   `
 }
