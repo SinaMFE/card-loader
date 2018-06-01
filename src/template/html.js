@@ -1,11 +1,16 @@
 export default `<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
   <meta name="author" content="sina_mobile">
   <meta name="format-detection" content="telephone=no">
   <title>Document</title>
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
   <link href="./static/css/main.min.css" rel="stylesheet">
   <script type="text/javascript">
     ! function (w, d, m) {

@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "1.0.0",
+  "version": "1.0.0-beta.0",
   "author": "huguang",
   "description": "Hybrid card loader for Marauder",
   "main": "lib/index.js",
@@ -13,6 +13,8 @@
     "lib"
   ],
   "dependencies": {
+    "@babel/parser": "^7.0.0-beta.48",
+    "@babel/traverse": "^7.0.0-beta.49",
     "duplicate-package-checker-webpack-plugin": "^2.1.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "fs-extra": "^6.0.1",

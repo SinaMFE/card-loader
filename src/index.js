@@ -57,10 +57,12 @@ function getCardNameFromManifest(loaderContext) {
     );
   }
 
+  loaderContext.dependency(manifestPath)
+
   try {
     loaderName = require(manifestPath).name;
   } catch (e) {
-    throw new Error('[card-loader] card 对应 manifest 识别失败！');
+    throw new Error('[card-loader] card manifest.json 识别失败！');
   }
 
   if (!loaderName) {
