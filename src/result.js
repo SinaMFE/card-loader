@@ -14,15 +14,13 @@ function wap(filePath) {
           throw new Error('参数不存在或非对象！')
         }
 
-        var data = param.data
-        if (!data || typeof data !== 'object') {
-          data = {}
-        }
+        var data = param.data || {}
         var display = param.display
         if (!display || typeof display !== 'object') {
-          display = {};
-          display.opacity = 0;
-          display.backgroundColor = 'black';
+          display = {
+            opacity: 0,
+            backgroundColor: '#000'
+          }
         }
         addLayer(display.backgroundColor, display.opacity)
 
@@ -31,7 +29,7 @@ function wap(filePath) {
             cb && cb()
             removeLayer()
           }
-        }, rootId).show();
+        }, rootId).show()
       }
     };`;
 }
@@ -58,8 +56,15 @@ function app(cardName) {
         if (!param || typeof param !== 'object') {
           throw new Error("show方法参数不存在或非对象！")
         }
+
+        // displayTime 必须为 String，兼容安卓
+        if(param.display && typeof param.display.displayTime === 'number') {
+          param.display.displayTime += ''
+        }
+
         param.path = modalPath
 
+        // debug 调试用
         if(onlinePath.indexOf('http') > -1) {
           param.onlinePath = onlinePath
         }
