@@ -9,13 +9,13 @@ function wap(filePath) {
     ${webRuntime};
 
     export default {
-      show(param) {
-        if (!param || typeof param !== 'object') {
+      show(options) {
+        if (!options || typeof options !== 'object') {
           throw new Error('参数不存在或非对象！')
         }
 
-        var data = param.data || {}
-        var display = param.display
+        var data = options.data || {}
+        var display = options.display
         if (!display || typeof display !== 'object') {
           display = {
             opacity: 0,
@@ -52,24 +52,24 @@ function app(cardName) {
     }
 
     export default {
-      show: function(param) {
-        if (!param || typeof param !== 'object') {
-          throw new Error("show方法参数不存在或非对象！")
+      show: function(options) {
+        if (!options || typeof options !== 'object') {
+          throw new Error('show 方法参数不存在或非对象！')
         }
 
         // displayTime 必须为 String，兼容安卓
-        if(param.display && typeof param.display.displayTime === 'number') {
-          param.display.displayTime += ''
+        if(options.display && typeof options.display.displayTime === 'number') {
+          options.display.displayTime += ''
         }
 
-        param.path = modalPath
+        options.path = modalPath
 
-        // debug 调试用
+        // debug 调试用，在线链接
         if(onlinePath.indexOf('http') > -1) {
-          param.onlinePath = onlinePath
+          options.onlinePath = onlinePath
         }
 
-        appSNC.showWVModal(param);
+        return appSNC.showWVModal(options)
       }
     }`;
 }

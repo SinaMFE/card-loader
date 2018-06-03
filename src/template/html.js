@@ -7,9 +7,8 @@ export default `<!DOCTYPE html>
   <meta name="format-detection" content="telephone=no">
   <title>Document</title>
   <style>
-    body {
-      margin: 0;
-    }
+    * {-webkit-tap-highlight-color: rgba(0,0,0,0);}
+    body {margin: 0;}
   </style>
   <link href="./static/css/main.min.css" rel="stylesheet">
   <script type="text/javascript">

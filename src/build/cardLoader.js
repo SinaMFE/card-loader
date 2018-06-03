@@ -13,13 +13,21 @@ export default function(source) {
     }
 
     appSNC.ready(function(data) {
+      console.log('[CARD_READY]', data)
       data.message = data.message || {}
 
       try {
         card(data, { closeModal: closeModal }, 'root').show()
         appSNC.onRendered()
+        console.log('[CARD_RENDER]')
       } catch(e) {
-        console.error('[card error]', e)
+        // dev 模式在控制台保留错误信息
+        if(location.origin.indexOf('http') > -1) {
+          appSNC.onRendered()
+          // @TODO 无内容渲染时，给出关闭点击区域
+        }
+
+        console.error('[CARD_SHOW]', e)
       }
     })
   `
