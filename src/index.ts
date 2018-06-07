@@ -1,5 +1,3 @@
-'use strict';
-
 import fs from 'fs-extra';
 import path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
@@ -7,15 +5,22 @@ import build from './build';
 import loaderResult from './result';
 import htmlContent from './template/html';
 
-const isProd = process.env.NODE_ENV === 'production'
+import webpack, { loader } from 'webpack';
+
+const isProd = process.env.NODE_ENV === 'production';
 const isWap =
   process.env.jsbridgeBuildType === 'wap' ||
   process.env.jsbridgeBuildType === 'web';
 
-const cardNamePool = [];
+const cardNamePool: string[] = [];
 
-function loader(source) {
+function loader(this: loader.LoaderContext, source: string): void {
   const callback = this.async();
+
+  if (!callback) {
+    throw new Error('[card-loader] webpack loader执行失败！！');
+  }
+
   const options = getOptions(this);
   const cardName = getCardNameFromManifest(this);
   const resourceStr = stringifyRequest(this, this.resourcePath);
@@ -29,25 +34,30 @@ function loader(source) {
   if (isWap) return callback(null, loaderResult.wap(resourceStr));
 
   build(this.resource)
-    .then(stats => {
+    .then((stats: any) => {
       emitFile(this, cardName, stats.compilation.assets);
 
       callback(null, loaderResult.app(cardName));
-    }).catch(e => {
+    })
+    .catch(e => {
       throw new Error(e);
     });
 }
 
-function emitFile(ctx, cardName, assets) {
+function emitFile(
+  ctx: loader.LoaderContext,
+  cardName: string,
+  assets: webpack.Stats
+) {
   const dist = path.posix.join('modal', cardName);
 
-  ctx.emitFile(`${dist}/index.html`, htmlContent);
+  ctx.emitFile(`${dist}/index.html`, htmlContent, undefined);
   Object.keys(assets).forEach(asset => {
-    ctx.emitFile(`${dist}/${asset}`, assets[asset].source());
-  })
+    ctx.emitFile(`${dist}/${asset}`, assets[asset].source(), undefined);
+  });
 }
 
-function getCardNameFromManifest(loaderContext) {
+function getCardNameFromManifest(loaderContext: loader.LoaderContext): string {
   var manifestPath = path.join(loaderContext.context, 'manifest.json');
   let loaderName = '';
 
@@ -57,7 +67,7 @@ function getCardNameFromManifest(loaderContext) {
     );
   }
 
-  loaderContext.dependency(manifestPath)
+  loaderContext.dependency(manifestPath);
 
   try {
     loaderName = require(manifestPath).name;
@@ -73,7 +83,7 @@ function getCardNameFromManifest(loaderContext) {
 }
 
 // 兼容 Windows 平台
-function posixFormat(pathString) {
+function posixFormat(pathString: any): string {
   if (!pathString || typeof pathString !== 'string') {
     throw new Error('请传递 card 入口文件');
   }

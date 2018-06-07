@@ -7,7 +7,7 @@ import UglifyJsPlugin from 'uglifyjs-webpack-plugin';
 import ExtractTextPlugin from 'extract-text-webpack-plugin';
 import OptimizeCssAssetsPlugin from 'optimize-css-assets-webpack-plugin';
 import DuplicatePackageCheckerPlugin from 'duplicate-package-checker-webpack-plugin';
-import config from 'webpack-marauder/config';
+const config = require('webpack-marauder/config');
 import { banner } from 'webpack-marauder/libs/utils';
 
 const maraConf = require(config.paths.marauder);

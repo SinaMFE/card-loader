@@ -1,17 +1,9 @@
-"use strict";
+import fs from 'fs-extra';
+import path from 'path';
 
-exports.__esModule = true;
-exports.default = void 0;
+const webRuntime = fs.readFileSync(path.join(__dirname, './template/web.runtime.js'));
 
-var _fsExtra = _interopRequireDefault(require("fs-extra"));
-
-var _path = _interopRequireDefault(require("path"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const webRuntime = _fsExtra.default.readFileSync(_path.default.join(__dirname, './template/web.runtime.js'));
-
-function wap(filePath) {
+function wap(filePath: string): string {
   return `import card from ${filePath};
 
     ${webRuntime};
@@ -42,7 +34,7 @@ function wap(filePath) {
     };`;
 }
 
-function app(cardName) {
+function app(cardName: string): string {
   return `
     import appSNC from '@mfelibs/universal-framework';
     import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
@@ -82,8 +74,4 @@ function app(cardName) {
     }`;
 }
 
-var _default = {
-  wap,
-  app
-};
-exports.default = _default;
+export default { wap, app }

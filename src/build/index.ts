@@ -2,7 +2,7 @@ import webpack from 'webpack';
 import MemoryFS from 'memory-fs';
 import getWebpackConfig from './webpack.config';
 
-export default function(resource) {
+export default function(resource: string): Promise<webpack.Stats> {
   const webpackConfig = getWebpackConfig(resource);
 
   const compiler = webpack(webpackConfig);
