@@ -1,6 +1,6 @@
 import { stringifyRequest } from 'loader-utils';
 
-export default function(source) {
+export default function(source: Buffer) {
   return `
     import 'webpack-marauder/webpack/polyfills'
     import appSNC from '@mfelibs/universal-framework'

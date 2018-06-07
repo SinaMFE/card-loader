@@ -3,7 +3,7 @@ import path from 'path';
 
 const webRuntime = fs.readFileSync(path.join(__dirname, './template/web.runtime.js'));
 
-function wap(filePath) {
+function wap(filePath: string): string {
   return `import card from ${filePath};
 
     ${webRuntime};
@@ -34,7 +34,7 @@ function wap(filePath) {
     };`;
 }
 
-function app(cardName) {
+function app(cardName: string): string {
   return `
     import appSNC from '@mfelibs/universal-framework';
     import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
