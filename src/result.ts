@@ -9,7 +9,7 @@ function wap(filePath: string): string {
     ${webRuntime};
 
     export default {
-      show(param) {
+      show: function(param) {
         if (!param || typeof param !== 'object') {
           throw new Error('参数不存在或非对象！')
         }
