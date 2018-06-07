@@ -1,13 +1,13 @@
 {
   "name": "card-loader",
-  "version": "1.1.0-ts.4",
+  "version": "1.1.0-ts.5",
   "author": "huguang",
   "description": "Hybrid card loader for Marauder",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf lib/",
     "prebuild": "npm run clean -s",
-    "build": "tsc",
+    "build": "tsc & babel temp/ --out-dir lib/ & rimraf temp/",
     "prepublishOnly": "npm run build"
   },
   "files": [
