@@ -2,7 +2,7 @@ import { stringifyRequest } from 'loader-utils';
 
 import { loader } from 'webpack';
 
-export default function(this: loader.LoaderContext, ource: Buffer) {
+export default function(this: loader.LoaderContext, source: Buffer) {
   return `
     import 'webpack-marauder/webpack/polyfills'
     import appSNC from '@mfelibs/universal-framework'

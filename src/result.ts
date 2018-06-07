@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+const fs = require('fs-extra');
 import path from 'path';
 
 const webRuntime = fs.readFileSync(path.join(__dirname, './template/web.runtime.js'));

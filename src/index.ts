@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+const fs = require('fs-extra');
 import path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
 import build from './build';
