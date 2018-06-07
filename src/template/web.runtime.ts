@@ -32,7 +32,7 @@ function addLayer(background, opacity) {
 function removeLayer() {
   let mask = document.getElementById(maskId);
 
-  if (mask) {
+  if (mask && mask.parentNode) {
 
     mask.parentNode.removeChild(mask);
   }

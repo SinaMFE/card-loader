@@ -1,6 +1,8 @@
 import { stringifyRequest } from 'loader-utils';
 
-export default function(source: Buffer) {
+import { loader } from 'webpack';
+
+export default function(this: loader.LoaderContext, ource: Buffer) {
   return `
     import 'webpack-marauder/webpack/polyfills'
     import appSNC from '@mfelibs/universal-framework'
@@ -22,5 +24,5 @@ export default function(source: Buffer) {
         console.error('[card error]', e)
       }
     })
-  `
+  `;
 }
