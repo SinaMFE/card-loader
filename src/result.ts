@@ -24,6 +24,8 @@ function wap(filePath: string): string {
         }
         addLayer(display.backgroundColor, display.opacity)
 
+        data = {message: param.message}
+
         card(data, {
           closeModal: function(cb) {
             cb && cb()
