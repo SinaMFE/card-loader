@@ -2,9 +2,7 @@
   "name": "card-loader",
   "version": "1.2.0",
   "author": "huguang",
-  "contributors": [
-    "Vincent <vv314@foxmail.com>"
-  ],
+  "contributors": ["Vincent <vv314@foxmail.com>"],
   "description": "Hybrid card loader for Marauder",
   "main": "lib/index.js",
   "scripts": {
@@ -14,9 +12,7 @@
     "prepublishOnly": "npm run build",
     "precommit": "lint-staged"
   },
-  "files": [
-    "lib"
-  ],
+  "files": ["lib"],
   "dependencies": {
     "@babel/parser": "^7.0.0-beta.48",
     "@babel/traverse": "^7.0.0-beta.49",
@@ -56,10 +52,7 @@
     "webpack-marauder": "^1.10.4"
   },
   "lint-staged": {
-    "src/**/*.{ts,md}": [
-      "prettier --write",
-      "git add"
-    ]
+    "src/**/*.{ts,md}": ["prettier --write", "git add"]
   },
   "license": "MIT",
   "engines": {
