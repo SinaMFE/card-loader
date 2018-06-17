@@ -1,9 +1,9 @@
-import fs from 'fs-extra';
-import path from 'path';
+import { readFileSync } from 'fs-extra';
+import { join } from 'path';
 
-const webRuntime = fs.readFileSync(path.join(__dirname, './template/web.runtime.js'));
+const webRuntime = readFileSync(join(__dirname, './template/web.runtime.js'));
 
-function wap(filePath) {
+function wap(filePath: string): string {
   return `import card from ${filePath};
 
     ${webRuntime};
@@ -24,6 +24,8 @@ function wap(filePath) {
         }
         addLayer(display.backgroundColor, display.opacity)
 
+        data = {message: param.message}
+
         card(data, {
           closeModal: function(cb) {
             cb && cb()
@@ -34,7 +36,7 @@ function wap(filePath) {
     };`;
 }
 
-function app(cardName) {
+function app(cardName: string): string {
   return `
     import appSNC from '@mfelibs/universal-framework';
     import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
@@ -74,4 +76,4 @@ function app(cardName) {
     }`;
 }
 
-export default { wap, app }
+export default { wap, app };
