@@ -25,7 +25,7 @@ export default function(this: loader.LoaderContext, source: Buffer) {
       data.message = data.message || {}
 
       try {
-        card(data, { closeModal: closeModal }, 'root').show()
+        card(data, { closeModal: closeModal }, '#root').show()
         SDK.onRendered()
         console.log('[CARD_RENDER]')
       } catch(e) {
