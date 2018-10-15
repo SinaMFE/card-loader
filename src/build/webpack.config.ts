@@ -22,11 +22,13 @@ const compress = Object.assign(config.compress, maraConf.compress);
  * @param  {String} options.cmd   当前命令
  * @return {Object}               webpack 配置对象
  */
-export default function(resource: string) {
+export default function(resource: string, opts: any) {
   const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')(
     'index'
   );
-  const entry = `${resolve(__dirname, './cardLoader.js')}!${resource}`;
+  const entry = `${resolve(__dirname, './cardLoader.js')}?sdk=${
+    opts.sdk
+  }!${resource}`;
 
   // https://github.com/survivejs/webpack-merge
   const webpackConfig = merge(baseWebpackConfig, {

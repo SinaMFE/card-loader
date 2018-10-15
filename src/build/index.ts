@@ -1,9 +1,19 @@
 import webpack = require('webpack');
 import MemoryFS = require('memory-fs');
 import getWebpackConfig from './webpack.config';
+import getDependencies from './getDependencies';
 
-export default function(resource: string): Promise<webpack.Stats> {
-  const webpackConfig = getWebpackConfig(resource);
+type Build = {
+  stats: any;
+  dependencies: string[];
+};
+
+export default function(
+  resource: string,
+  source: string,
+  opts: any = {}
+): Promise<Build> {
+  const webpackConfig = getWebpackConfig(resource, opts);
 
   const compiler = webpack(webpackConfig);
   // 使用内存文件系统，构建后通过 stats 获取结果
@@ -13,7 +23,9 @@ export default function(resource: string): Promise<webpack.Stats> {
     compiler.run((err, stats) => {
       if (err) return reject(err);
 
-      resolve(stats);
+      const dependencies = getDependencies(source);
+
+      resolve({ stats, dependencies });
     });
   });
 }

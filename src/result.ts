@@ -3,7 +3,7 @@ import { join } from 'path';
 
 const webRuntime = readFileSync(join(__dirname, './template/web.runtime.js'));
 
-function wap(filePath: string): string {
+function wap(filePath: string, opts?: any): string {
   return `import card from ${filePath};
 
     ${webRuntime};
@@ -36,14 +36,19 @@ function wap(filePath: string): string {
     };`;
 }
 
-function app(cardName: string): string {
-  return `
-    import appSNC from '@mfelibs/universal-framework';
+function app(cardName: string, opts: any = {}): string {
+  const SNC = `
+    import SDK from '@mfelibs/universal-framework';
     import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
 
-    appSNC.mountApi('appApis', {
+    SDK.mountApi('appApis', {
       showWVModal
     });
+    `;
+  const BiuSdk = `import SDK from '@mfelibs/biubiu-sdk';`;
+
+  return `
+    ${opts.sdk == 'biubiu' ? BiuSdk : SNC}
 
     var modalPath = 'modal/${cardName}/index.html'
     var onlinePath = location.origin + '/' + modalPath
@@ -71,7 +76,7 @@ function app(cardName: string): string {
           options.onlinePath = onlinePath
         }
 
-        return appSNC.showWVModal(options)
+        return SDK.showWVModal(options)
       }
     }`;
 }

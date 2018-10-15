@@ -1,17 +1,17 @@
-import traverse from '@babel/traverse';
 import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
 
 export default function(code: string) {
-  const ast = parse(code);
-  const deps = [];
+  const ast = parse(code, {
+    sourceType: 'module'
+  });
+  const dependencies: string[] = [];
 
   traverse(ast, {
-    enter(path) {
-      if (path.isIdentifier({ name: 'n' })) {
-        path.node.name = 'x';
-      }
+    ImportDeclaration: ({ node }) => {
+      dependencies.push(node.source.value);
     }
   });
 
-  return deps;
+  return dependencies.filter(path => path.indexOf('.') == 0);
 }

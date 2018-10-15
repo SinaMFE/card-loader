@@ -1,11 +1,10 @@
+import { loader, Stats } from 'webpack';
 import { existsSync } from 'fs-extra';
 import * as path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
 import build from './build';
 import loaderResult from './result';
 import htmlContent from './template/html';
-
-import { loader, Stats } from 'webpack';
 
 const isProd = process.env.NODE_ENV === 'production';
 const isWap =
@@ -21,7 +20,7 @@ function loader(this: loader.LoaderContext, source: string): void {
     throw new Error('[card-loader] webpack loader执行失败！！');
   }
 
-  const options = getOptions(this);
+  const options = getOptions(this) || {};
   const cardName = getCardNameFromManifest(this);
   const resourceStr = stringifyRequest(this, this.resourcePath);
 
@@ -33,11 +32,14 @@ function loader(this: loader.LoaderContext, source: string): void {
 
   if (isWap) return callback(null, loaderResult.wap(resourceStr));
 
-  build(this.resource)
-    .then((stats: any) => {
+  build(this.resource, source, options)
+    .then(({ stats, dependencies }) => {
+      // console.log('dependencies', dependencies);
+
+      // dependencies.forEach(this.dependency.bind(this));
       emitFile(this, cardName, stats.compilation.assets);
 
-      callback(null, loaderResult.app(cardName));
+      callback(null, loaderResult.app(cardName, options));
     })
     .catch(e => {
       throw new Error(e);

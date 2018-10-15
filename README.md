@@ -1,18 +1,32 @@
-本说明主要针对浮层的开发
+# hybrid 浮层 loader
 
 ## 安装和使用
 
-安装：
+### 安装：
 
-```shell
+```bash
 yarn add card-loader -D
 ```
 
-使用 loader：
+### 使用 loader：
 
 ```javascript
-// 引入路径为./card/index.js的浮层
-const card = require("card-loader!./card/index.js");
+import card from 'card-loader!./card/modal';
+```
+
+#### 配置
+
+**sdk** 参数用于指定 sdk 环境，对于 biubiu 项目，传入 'biubiu'
+
+```javascript
+import card from 'card-loader?sdk=biubiu!./card/modal';
+```
+
+### 示例：
+
+```javascript
+// 引入路径为./card/modal.js的浮层
+import card from 'card-loader!./card/modal';
 
 const param = {
   display: {
@@ -20,15 +34,15 @@ const param = {
   },
   message: {},
   success(data) {
-    console.log("success", data)
+    console.log('success', data);
   },
   error(opt, errMessage) {
-    console.log("err", errMessage, opt);
+    console.log('err', errMessage, opt);
   }
-}
+};
 
 // 参数的配置path字段外遵循 http://wiki.intra.sina.com.cn/pages/viewpage.action?pageId=166466748
-card.show(param)
+card.show(param);
 ```
 
 ## 浮层模块的开发
@@ -42,14 +56,14 @@ card.show(param)
  * 模块暴露一个名称为card的函数，接收三个参数
  * 使用函数声明的原因是 在抹平差异同时需要传递参数给业务人员
  * 函数会在hybrid的ready生命周期后执行，并注入参数
- * 
+ *
  * @export
  * @param {object} data 从主view传递过来的参数(实际为ready方法触发传递的参数)
  * @param {object} {
  *   closeModal
  * } 注入的变量和方法，目前只有closeModal方法，调用则关闭当前浮层
  * @param {string} container 渲染的容器id
- * @returns {object} {show: function} 
+ * @returns {object} {show: function}
  * 函数返回对象中包含键为show的方法，内部执行浮层渲染、显示，业务人员需要实现此方法
  */
 export default function(data, inject, containerId) {
@@ -84,17 +98,16 @@ function renderModal(data, inject, containerId) {
 
   container.appendChild(button);
 }
-
 ```
 
-如注释，模块只规定通过export default输出一个方法，该方法接收三个参数，并且返回一个含有show方法的对象。
+ 如注释，模块只规定通过 export default 输出  一个方法，该方法  接收三个参数，并且返回一个含有 show 方法的对象。
 
-show方法完成模块渲染。
+show 方法完成模块渲染。
 
->注意：
->当使用`card-loader`加载代码时，客户端的浮层代码会以一个单独的页面存在。
->换句话说在编译页面同时会以loader为入口文件执行webpack构建弹层页面。
->因此弹层使用的各种资源文件（包含但不限于js、css）需要直接或间接的被浮层入口文件引入
+> 注意：
+> 当使用`card-loader`加载代码时，客户端的浮层代码会以一个单独的页面存在。
+> 换句话说在编译页面同时会以 loader 为入口文件执行 webpack 构建弹层页面。
+> 因此弹层使用的各种资源文件（包含但不限于 js、css）需要直接或间接的被浮层入口文件引入
 
 ### `manifest.json`文件
 
@@ -105,4 +118,5 @@ show方法完成模块渲染。
   "name": "card-name"
 }
 ```
+
 如果没有此文件，编译时会报错。
