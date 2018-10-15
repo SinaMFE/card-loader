@@ -6,7 +6,9 @@
     "noImplicitReturns": true,
     "moduleResolution": "node",
     "noImplicitAny": false,
-    "outDir": "lib"
+    "outDir": "lib",
+    "esModuleInterop": true,
+    "declaration": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

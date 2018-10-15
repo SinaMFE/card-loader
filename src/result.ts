@@ -28,7 +28,9 @@ function wap(filePath: string, opts?: any): string {
 
         card(data, {
           closeModal: function(cb) {
-            cb && cb()
+            if (cb && typeof cb == "function") {
+              cb && cb()
+            }
             removeLayer()
           }
         }, rootId).show()
