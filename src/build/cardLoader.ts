@@ -4,14 +4,16 @@ import { loader } from 'webpack';
 
 export default function(this: loader.LoaderContext, source: Buffer) {
   const options = getOptions(this) || {};
-  const SNC = `import SDK from '@mfelibs/universal-framework'`;
+  const SNC = `
+    import SDK from '@mfelibs/universal-framework'
+    import '@mfelibs/universal-framework/src/libs/apis/closeWindow'
+    import '@mfelibs/universal-framework/src/libs/apis/onRendered'
+   `;
   const BiuSdk = `import SDK from '@mfelibs/biubiu-sdk'`;
 
   return `
     import 'webpack-marauder/webpack/polyfills'
     ${options.sdk == 'biubiu' ? BiuSdk : SNC}
-    import '@mfelibs/universal-framework/src/libs/apis/closeWindow'
-    import '@mfelibs/universal-framework/src/libs/apis/onRendered'
     import card from ${stringifyRequest(this, this.resourcePath)}
 
     function closeModal() {
