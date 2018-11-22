@@ -21,6 +21,7 @@ export default function(this: loader.LoaderContext, source: Buffer) {
     }
 
     SDK.ready(function(data) {
+      data = data || {}
       console.log('[CARD_READY]', data)
       data.message = data.message || {}
 
