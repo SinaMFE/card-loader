@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "author": "huguang",
   "contributors": ["Vincent <vv314@foxmail.com>"],
   "description": "Hybrid card loader for Marauder",
