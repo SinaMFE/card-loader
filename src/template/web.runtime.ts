@@ -1,8 +1,10 @@
-const maskId = 'card-mask-' + new Date().getTime();
+// 注意！！！
+// 此文件不经过 babel-loader
+// 使用 ES5 编写此文件
 
-const rootId = 'card-root';
-
-let styleAdded = false;
+var maskId = 'card-mask-' + new Date().getTime();
+var rootId = 'card-root';
+var styleAdded = false;
 
 function addLayer(
   background: string | undefined,
@@ -16,11 +18,9 @@ function addLayer(
     opacity = 0;
   }
 
-  let mask = document.getElementById(maskId);
+  var mask = document.getElementById(maskId);
 
-  if (mask) {
-    return;
-  }
+  if (mask) return;
 
   if (!styleAdded) {
     addLayerCss(background, opacity);
@@ -28,20 +28,18 @@ function addLayer(
   }
 
   mask = document.createElement('section');
-
   mask.id = maskId;
 
-  const root = document.createElement('div');
+  var root = document.createElement('div');
 
   root.id = rootId;
 
   mask.appendChild(root);
-
   document.body.appendChild(mask);
 }
 
 function removeLayer() {
-  let mask = document.getElementById(maskId);
+  var mask = document.getElementById(maskId);
 
   if (mask && mask.parentNode) {
     mask.parentNode.removeChild(mask);
@@ -49,19 +47,23 @@ function removeLayer() {
 }
 
 function addLayerCss(background, opacity) {
-  const head = document.head;
+  var head = document.head;
+  var style = document.createElement('style');
 
-  const style = document.createElement('style');
+  style.innerHTML =
+    '#' + maskId + ' {getLayerStyle(' + background + ',' + opacity + ')}';
 
-  style.innerHTML = `#${maskId}{${getLayerStyle(background, opacity)}`;
-
-  head.appendChild(style);
+  head && head.appendChild(style);
 }
 
 function getLayerStyle(background: string, opacity: number | string) {
-  const color = transformColorToRgba(background, opacity);
+  var color = transformColorToRgba(background, opacity);
 
-  return `position: fixed; top: 0; left: 0; background: ${color}; height: 100%; width:100%;z-index: 999`;
+  return (
+    'position: fixed; top: 0; left: 0; background: ' +
+    color +
+    '; height: 100%; width: 100%; z-index: 999'
+  );
 }
 
 function transformColorToRgba(color: string, opacity: number | string): string {
@@ -69,26 +71,24 @@ function transformColorToRgba(color: string, opacity: number | string): string {
     throw new Error('传入色值不符合要求！');
   }
 
-  const colorString = color.split('#')[1];
+  var colorString = color.split('#')[1];
 
   if (colorString.length < 2) {
     throw new Error('传入色值不符合要求！');
   }
 
-  const length = colorString.length;
-
-  const arr: string[] = [];
-
-  let count = 0;
-  const pace = length / 3;
+  var length = colorString.length;
+  var arr: string[] = [];
+  var count = 0;
+  var pace = length / 3;
 
   for (count = 0; count < length; count = count + pace) {
     arr.push(colorString.slice(count, count + pace));
   }
 
-  const hexCommaString = arr.map(color => {
+  var hexCommaString = arr.map(function(color) {
     return parseInt(color, 16);
   });
 
-  return `rgba(${hexCommaString},${opacity})`;
+  return 'rgba(' + hexCommaString + ',' + opacity + ')';
 }

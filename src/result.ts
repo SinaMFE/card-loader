@@ -3,32 +3,36 @@ import { join } from 'path';
 
 const webRuntime = readFileSync(join(__dirname, './template/web.runtime.js'));
 
+// 除模块化语法外，使用 ES5 编写
+
 function wap(filePath: string, opts?: any): string {
   return `import card from ${filePath};
 
     ${webRuntime};
 
     export default {
-      show(options) {
+      show: function(options) {
         if (!options || typeof options !== 'object') {
           throw new Error('参数不存在或非对象！')
         }
 
         var data = options.data || {}
         var display = options.display
+
         if (!display || typeof display !== 'object') {
           display = {
             opacity: 0,
             backgroundColor: '#000'
           }
         }
+
         addLayer(display.backgroundColor, display.opacity)
 
-        data = {message: param.message}
+        data = { message: param.message }
 
         card(data, {
           closeModal: function(cb) {
-            if (cb && typeof cb == "function") {
+            if (cb && typeof cb == 'function') {
               cb && cb()
             }
             removeLayer()
@@ -44,7 +48,7 @@ function app(cardName: string, opts: any = {}): string {
     import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
 
     SDK.mountApi('appApis', {
-      showWVModal
+      showWVModal: showWVModal
     });
     `;
   const BiuSdk = `import SDK from '@mfelibs/biubiu-sdk';`;
