@@ -16,7 +16,6 @@ function wap(filePath: string, opts?: any): string {
           throw new Error('参数不存在或非对象！')
         }
 
-        var data = options.data || {}
         var display = options.display
 
         if (!display || typeof display !== 'object') {
@@ -28,7 +27,7 @@ function wap(filePath: string, opts?: any): string {
 
         addLayer(display.backgroundColor, display.opacity)
 
-        data = { message: param.message }
+        var data = { message: options.message }
 
         card(data, {
           closeModal: function(cb) {
