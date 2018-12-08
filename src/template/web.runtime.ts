@@ -2,13 +2,13 @@ const maskId = `card-mask-${Date.now()}`;
 const rootId = 'card-root';
 let styleAdded = false;
 
-function addLayer(background = '#000', opacity = 0) {
+function showCard({ backgroundColor = '#000', opacity = 0, displayTime = 0 }) {
   let mask = document.getElementById(maskId);
 
   if (mask) return;
 
   if (!styleAdded) {
-    addLayerCss(background, opacity);
+    addLayerCss(backgroundColor, opacity);
     styleAdded = true;
   }
 
@@ -21,9 +21,13 @@ function addLayer(background = '#000', opacity = 0) {
 
   mask.appendChild(rootEl);
   document.body.appendChild(mask);
+
+  if (displayTime > 0) {
+    setTimeout(removeCard, displayTime * 1000);
+  }
 }
 
-function removeLayer() {
+function removeCard() {
   const mask = document.getElementById(maskId);
 
   if (mask && mask.parentNode) {

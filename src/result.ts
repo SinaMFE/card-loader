@@ -38,16 +38,17 @@ function wap(filePath: string, opts?: any): string {
 
         const display = options.display || {
           opacity: 0,
-          backgroundColor: '#000'
+          backgroundColor: '#000',
+          displayTime: 0
         }
 
-        addLayer(display.backgroundColor, display.opacity)
+        showCard(display)
 
         card({ message: options.message }, {
           closeModal(cb) {
             typeof cb == 'function' && cb()
 
-            removeLayer()
+            removeCard()
           }
         }, rootId).show()
       }
