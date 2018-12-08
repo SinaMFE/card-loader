@@ -1,62 +1,85 @@
+import { transform } from '@babel/core';
 import { readFileSync } from 'fs-extra';
 import { join } from 'path';
 
-const webRuntime = readFileSync(join(__dirname, './template/web.runtime.js'));
+const babelOpt = {
+  babelrc: false,
+  presets: [
+    [
+      require('@babel/preset-env').default,
+      {
+        useBuiltIns: false,
+        // Do not transform modules to CJS
+        modules: false,
+        // Exclude transforms that make all code slower
+        exclude: ['transform-typeof-symbol']
+      }
+    ]
+  ]
+};
 
-// 除模块化语法外，使用 ES5 编写
+function transES5(code) {
+  return transform(code, babelOpt).code;
+}
 
 function wap(filePath: string, opts?: any): string {
-  return `import card from ${filePath};
+  const webRuntime = readFileSync(join(__dirname, './template/web.runtime.js'));
+
+  return transES5(
+    `import card from ${filePath};
 
     ${webRuntime};
 
     export default {
-      show: function(options) {
+      show(options) {
         if (!options || typeof options !== 'object') {
           throw new Error('参数不存在或非对象！')
         }
 
-        var display = options.display
-
-        if (!display || typeof display !== 'object') {
-          display = {
-            opacity: 0,
-            backgroundColor: '#000'
-          }
+        const display = options.display || {
+          opacity: 0,
+          backgroundColor: '#000'
         }
 
         addLayer(display.backgroundColor, display.opacity)
 
-        var data = { message: options.message }
+        card({ message: options.message }, {
+          closeModal(cb) {
+            typeof cb == 'function' && cb()
 
-        card(data, {
-          closeModal: function(cb) {
-            if (cb && typeof cb == 'function') {
-              cb && cb()
-            }
             removeLayer()
           }
         }, rootId).show()
       }
-    };`;
+    };`
+  );
 }
 
 function app(cardName: string, opts: any = {}): string {
-  const SNC = `
-    import SDK from '@mfelibs/universal-framework';
-    import showWVModal from '@mfelibs/client-jsbridge/src/sdk/appApis/showWVModal';
+  return transES5(
+    `if(!window.__SNC__) throw new Error('请优先引入 app snc')
 
-    SDK.mountApi('appApis', {
-      showWVModal: showWVModal
-    });
-    `;
-  const BiuSdk = `import SDK from '@mfelibs/biubiu-sdk';`;
+    const appSNC = window.__SNC__.instance
 
-  return `
-    ${opts.sdk == 'biubiu' ? BiuSdk : SNC}
+    if(!appSNC.showWVModal) {
+      const cardApi = {
+        showWVModal(ctx) {
+          ctx.showWVModal = ctx.definedMethod('hb.core.showWVModal', {
+            path: '',
+            display: {
+              backgroundColor: '#000000',
+              opacity: 0
+            }
+          });
+        }
+      }
 
-    var modalPath = 'modal/${cardName}/index.html'
-    var onlinePath = location.origin + '/' + modalPath
+      // 兼容 mountApi 参数差异
+      appSNC.mountApi(cardApi, cardApi)
+    }
+
+    const modalPath = 'modal/${cardName}/index.html'
+    let onlinePath = location.origin + '/' + modalPath
 
     if(process.env.PUBLIC_URL.indexOf('http') > -1) {
       // @FIXME remove end slash
@@ -64,7 +87,7 @@ function app(cardName: string, opts: any = {}): string {
     }
 
     export default {
-      show: function(options) {
+      show(options) {
         if (!options || typeof options !== 'object') {
           throw new Error('show 方法参数不存在或非对象！')
         }
@@ -81,9 +104,10 @@ function app(cardName: string, opts: any = {}): string {
           options.onlinePath = onlinePath
         }
 
-        return SDK.showWVModal(options)
+        return appSNC.showWVModal(options)
       }
-    }`;
+    }`
+  );
 }
 
 export default { wap, app };

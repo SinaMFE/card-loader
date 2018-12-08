@@ -1,24 +1,9 @@
-// 注意！！！
-// 此文件不经过 babel-loader
-// 使用 ES5 编写此文件
+const maskId = `card-mask-${Date.now()}`;
+const rootId = 'card-root';
+let styleAdded = false;
 
-var maskId = 'card-mask-' + new Date().getTime();
-var rootId = 'card-root';
-var styleAdded = false;
-
-function addLayer(
-  background: string | undefined,
-  opacity: number | string | undefined
-) {
-  if (!background) {
-    background = '#000';
-  }
-
-  if (!opacity) {
-    opacity = 0;
-  }
-
-  var mask = document.getElementById(maskId);
+function addLayer(background = '#000', opacity = 0) {
+  let mask = document.getElementById(maskId);
 
   if (mask) return;
 
@@ -30,16 +15,16 @@ function addLayer(
   mask = document.createElement('section');
   mask.id = maskId;
 
-  var root = document.createElement('div');
+  const rootEl = document.createElement('div');
 
-  root.id = rootId;
+  rootEl.id = rootId;
 
-  mask.appendChild(root);
+  mask.appendChild(rootEl);
   document.body.appendChild(mask);
 }
 
 function removeLayer() {
-  var mask = document.getElementById(maskId);
+  const mask = document.getElementById(maskId);
 
   if (mask && mask.parentNode) {
     mask.parentNode.removeChild(mask);
@@ -47,17 +32,16 @@ function removeLayer() {
 }
 
 function addLayerCss(background, opacity) {
-  var head = document.head;
-  var style = document.createElement('style');
+  const head = document.head;
+  const style = document.createElement('style');
 
-  style.innerHTML =
-    '#' + maskId + ' {getLayerStyle(' + background + ',' + opacity + ')}';
+  style.innerHTML = `#${maskId} {${getLayerStyle(background, opacity)}}`;
 
   head && head.appendChild(style);
 }
 
 function getLayerStyle(background: string, opacity: number | string) {
-  var color = transformColorToRgba(background, opacity);
+  const color = transformColorToRgba(background, opacity);
 
   return (
     'position: fixed; top: 0; left: 0; background: ' +
@@ -71,24 +55,21 @@ function transformColorToRgba(color: string, opacity: number | string): string {
     throw new Error('传入色值不符合要求！');
   }
 
-  var colorString = color.split('#')[1];
+  const colorString = color.split('#')[1];
 
   if (colorString.length < 2) {
     throw new Error('传入色值不符合要求！');
   }
 
-  var length = colorString.length;
-  var arr: string[] = [];
-  var count = 0;
-  var pace = length / 3;
+  const length = colorString.length;
+  const pace = length / 3;
+  let arr: string[] = [];
 
-  for (count = 0; count < length; count = count + pace) {
+  for (let count = 0; count < length; count += pace) {
     arr.push(colorString.slice(count, count + pace));
   }
 
-  var hexCommaString = arr.map(function(color) {
-    return parseInt(color, 16);
-  });
+  const hexCommaString = arr.map(color => parseInt(color, 16));
 
-  return 'rgba(' + hexCommaString + ',' + opacity + ')';
+  return `rgba(${hexCommaString}, ${opacity})`;
 }
