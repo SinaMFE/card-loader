@@ -1,43 +1,39 @@
 import { getOptions, stringifyRequest } from 'loader-utils';
+import { transES5 } from './util';
 
 import { loader } from 'webpack';
 
 export default function(this: loader.LoaderContext, source: Buffer) {
   const options = getOptions(this) || {};
-  const SNC = `
-    import SDK from '@mfelibs/universal-framework'
-    import '@mfelibs/universal-framework/src/libs/apis/closeWindow'
-    import '@mfelibs/universal-framework/src/libs/apis/onRendered'
-   `;
-  const BiuSdk = `import SDK from '@mfelibs/biubiu-sdk'`;
 
-  return `
+  // loader 自身返回的代码需要确保为 es5
+  return transES5(`
     import 'webpack-marauder/webpack/polyfills'
-    ${options.sdk == 'biubiu' ? BiuSdk : SNC}
     import card from ${stringifyRequest(this, this.resourcePath)}
+    import * as SNC from 'card-loader/lib/micoSNC'
 
-    function closeModal() {
-      SDK.closeWindow()
+    const closeModal = () => {
+      SNC.closeWindow()
     }
 
-    SDK.ready(function(data) {
+    SNC.ready(data => {
       data = data || {}
       console.log('[CARD_READY]', data)
       data.message = data.message || {}
 
       try {
         card(data, { closeModal: closeModal }, '#root').show()
-        SDK.onRendered()
+        SNC.onRendered()
         console.log('[CARD_RENDER]')
       } catch(e) {
         // dev 模式在控制台保留错误信息
         if(location.origin.indexOf('http') > -1) {
-          SDK.onRendered()
+          SNC.onRendered()
           // @TODO 无内容渲染时，给出关闭点击区域
         }
 
         console.error('[CARD_SHOW]', e)
       }
     })
-  `;
+  `);
 }

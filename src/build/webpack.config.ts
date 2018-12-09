@@ -26,7 +26,7 @@ export default function(resource: string, opts: any) {
   const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')(
     'index'
   );
-  const entry = `${resolve(__dirname, './cardLoader.js')}?sdk=${
+  const entry = `${resolve(__dirname, './cardWrapper.js')}?sdk=${
     opts.sdk
   }!${resource}`;
 

@@ -3,7 +3,7 @@ import { existsSync } from 'fs-extra';
 import * as path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
 import build from './build';
-import loaderResult from './result';
+import loaderResult from './output';
 import htmlContent from './template/html';
 
 const isProd = process.env.NODE_ENV === 'production';

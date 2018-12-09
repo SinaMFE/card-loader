@@ -77,3 +77,33 @@ function transformColorToRgba(color: string, opacity: number | string): string {
 
   return `rgba(${hexCommaString}, ${opacity})`;
 }
+
+export default cardModal => {
+  return {
+    show(options) {
+      if (!options || typeof options !== 'object') {
+        throw new Error('参数不存在或非对象！');
+      }
+
+      const display = options.display || {
+        opacity: 0,
+        backgroundColor: '#000',
+        displayTime: 0
+      };
+
+      showCard(display);
+
+      cardModal(
+        { message: options.message },
+        {
+          closeModal(cb) {
+            typeof cb == 'function' && cb();
+
+            removeCard();
+          }
+        },
+        '#' + rootId
+      ).show();
+    }
+  };
+};
