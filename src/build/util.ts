@@ -16,8 +16,6 @@ const babelOpt = {
   ]
 };
 
-function transES5(code) {
+export function transES5(code: string): string {
   return transform(code, babelOpt).code;
 }
-
-export { transES5 };

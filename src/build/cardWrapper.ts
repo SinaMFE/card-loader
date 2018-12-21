@@ -10,7 +10,7 @@ export default function(this: loader.LoaderContext, source: Buffer) {
   return transES5(`
     import 'webpack-marauder/webpack/polyfills'
     import card from ${stringifyRequest(this, this.resourcePath)}
-    import * as SNC from 'card-loader/lib/micoSNC'
+    import * as SNC from 'card-loader/lib/microSNC'
 
     const closeModal = () => {
       SNC.closeWindow()

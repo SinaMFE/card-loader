@@ -1,4 +1,4 @@
-import { showWVModal } from '../micoSNC';
+import { showWVModal } from '../microSNC';
 
 export default modalPath => {
   let onlinePath = location.origin + '/' + modalPath;

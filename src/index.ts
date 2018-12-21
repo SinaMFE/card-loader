@@ -1,50 +1,17 @@
 import { loader, Stats } from 'webpack';
-import { existsSync } from 'fs-extra';
+import { existsSync, readJsonSync } from 'fs-extra';
 import * as path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
-import build from './build';
+import build, { watchBuild } from './build';
 import loaderResult from './output';
 import htmlContent from './template/html';
 
-const isProd = process.env.NODE_ENV === 'production';
+const isDev = process.env.NODE_ENV === 'development';
 const isWap =
   process.env.jsbridgeBuildType === 'wap' ||
   process.env.jsbridgeBuildType === 'web';
 
-const cardNamePool: string[] = [];
-
-function loader(this: loader.LoaderContext, source: string): void {
-  const callback = this.async();
-
-  if (!callback) {
-    throw new Error('[card-loader] webpack loader执行失败！！');
-  }
-
-  const options = getOptions(this) || {};
-  const cardName = getCardNameFromManifest(this);
-  const resourceStr = stringifyRequest(this, this.resourcePath);
-
-  if (isProd && cardNamePool.includes(cardName)) {
-    throw new Error('[card-loader] 命名重复，已有模块命名为 ' + cardName);
-  } else {
-    cardNamePool.push(cardName);
-  }
-
-  if (isWap) return callback(null, loaderResult.wap(resourceStr));
-
-  build(this.resource, source, options)
-    .then(({ stats, dependencies }) => {
-      // console.log('dependencies', dependencies);
-
-      // dependencies.forEach(this.dependency.bind(this));
-      emitFile(this, cardName, stats.compilation.assets);
-
-      callback(null, loaderResult.app(cardName, options));
-    })
-    .catch(e => {
-      throw new Error(e);
-    });
-}
+const cardNamePool = {};
 
 function emitFile(ctx: loader.LoaderContext, cardName: string, assets: Stats) {
   const dist = path.posix.join('modal', cardName);
@@ -61,23 +28,80 @@ function getCardNameFromManifest(loaderContext: loader.LoaderContext): string {
 
   if (!existsSync(manifestPath)) {
     throw new Error(
-      '[card-loader] 未找到 card 对应的 manifest.json，请在 card 入口文件同目录建立 manifest.json 文件'
+      '[card-loader] 未找到 card 对应的 manifest.json，请在 card 入口文件创建 manifest.json 文件'
     );
   }
 
+  // 在读取 manifest 内容之前将其加入依赖
+  // 在 dev 模式报错时修改文件得以重新编译
   loaderContext.dependency(manifestPath);
 
   try {
-    loaderName = require(manifestPath).name;
+    loaderName = readJsonSync(manifestPath).name;
   } catch (e) {
-    throw new Error('[card-loader] card manifest.json 识别失败！');
+    throw new Error('[card-loader] card manifest.json 解析失败！');
   }
 
   if (!loaderName) {
     throw new Error('[card-loader] 请在 manifest.json 中指定 name 字段');
   }
 
+  checkCardName(loaderName, loaderContext.resourcePath);
+
   return loaderName;
 }
 
-export default loader;
+function checkCardName(cardName: string, path: string) {
+  if (
+    cardNamePool[path] != cardName &&
+    Object.values(cardNamePool).includes(cardName)
+  ) {
+    throw new Error(
+      `[card-loader] ${cardName} 命名重复，请检查 card manifest 配置`
+    );
+  }
+
+  cardNamePool[path] = cardName;
+}
+
+export default function(this: loader.LoaderContext, source: string): void {
+  const callback: any = this.async();
+  const options = getOptions(this) || {};
+  const resourceStr = stringifyRequest(this, this.resourcePath);
+
+  if (isWap) callback(null, loaderResult.wap(resourceStr));
+
+  let cardName = '';
+
+  try {
+    cardName = getCardNameFromManifest(this);
+  } catch (e) {
+    return callback([e.message]);
+  }
+
+  // if (isDev) {
+  //   let isFirstBuild = true;
+  //   const watch = watchBuild(this.resource, source, options, (err, stats) => {
+  //     if (err) return callback(err);
+
+  //     if (!isFirstBuild) return;
+
+  //     isFirstBuild = false;
+  //     emitFile(this, cardName, stats.compilation.assets);
+  //     callback(null, loaderResult.app(cardName, options));
+
+  //     console.log('watch build', cardName);
+  //   });
+  // } else {
+  build(this.resource, source, options)
+    .then(({ stats, dependencies }) => {
+      // dependencies.forEach(this.dependency.bind(this));
+      emitFile(this, cardName, stats.compilation.assets);
+
+      callback(null, loaderResult.app(cardName, options));
+    })
+    .catch(e => {
+      callback(e);
+    });
+  // }
+}
