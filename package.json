@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "huguang",
   "contributors": ["Vincent <vv314@foxmail.com>"],
   "description": "Hybrid card loader for Marauder",
@@ -51,9 +51,7 @@
     "webpack-marauder": "^1.10.7"
   },
   "peerDependencies": {
-    "@mfelibs/biubiu-sdk": "^1.0.0",
-    "@mfelibs/universal-framework": "^0.3.42",
-    "webpack-marauder": "^1.10.4"
+    "webpack-marauder": "^1.15.0"
   },
   "lint-staged": {
     "src/**/*.{ts,md}": ["prettier --write", "git add"]
@@ -62,6 +60,5 @@
   "engines": {
     "node": ">= 8.0.0"
   },
-  "repository": "",
-  "bugs": ""
+  "repository": "https://github.com/SinaMFE/card-loader"
 }
