@@ -13,8 +13,6 @@ import config = require('webpack-marauder/config');
 const maraConf = require(config.paths.marauder);
 const shouldUseSourceMap = !!maraConf.sourceMap;
 const isProd = process.env.NODE_ENV === 'production';
-// 压缩配置
-const compress = Object.assign(config.compress, maraConf.compress);
 
 /**
  * 生成生产配置
@@ -70,8 +68,7 @@ export default function(resource: string, opts: any) {
               // https://github.com/facebook/create-react-app/issues/2376
               // Pending further investigation:
               // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false,
-              drop_console: compress.drop_console
+              comparisons: false
             },
             mangle: {
               safari10: true
@@ -133,8 +130,6 @@ export default function(resource: string, opts: any) {
       })
     ].filter(Boolean)
   });
-
-  // webpackConfig.plugins.push(new CardPlugin());
 
   // 重要：确保 zip plugin 在插件列表末尾
 
