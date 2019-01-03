@@ -69,7 +69,7 @@ export default function(this: loader.LoaderContext, source: string): void {
   const options = getOptions(this) || {};
   const resourceStr = stringifyRequest(this, this.resourcePath);
 
-  if (isWap) callback(null, loaderResult.wap(resourceStr));
+  if (isWap) return callback(null, loaderResult.wap(resourceStr));
 
   let cardName = '';
 
@@ -79,23 +79,8 @@ export default function(this: loader.LoaderContext, source: string): void {
     return callback([e.message]);
   }
 
-  // if (isDev) {
-  //   let isFirstBuild = true;
-  //   const watch = watchBuild(this.resource, source, options, (err, stats) => {
-  //     if (err) return callback(err);
-
-  //     if (!isFirstBuild) return;
-
-  //     isFirstBuild = false;
-  //     emitFile(this, cardName, stats.compilation.assets);
-  //     callback(null, loaderResult.app(cardName, options));
-
-  //     console.log('watch build', cardName);
-  //   });
-  // } else {
   build(this.resource, source, options)
     .then(({ stats, dependencies }) => {
-      // dependencies.forEach(this.dependency.bind(this));
       emitFile(this, cardName, stats.compilation.assets);
 
       callback(null, loaderResult.app(cardName, options));
@@ -103,5 +88,4 @@ export default function(this: loader.LoaderContext, source: string): void {
     .catch(e => {
       callback(e);
     });
-  // }
 }

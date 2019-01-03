@@ -2,7 +2,11 @@ const maskId = `card-mask-${Date.now()}`;
 const rootId = 'card-root';
 let styleAdded = false;
 
-function showCard({ backgroundColor = '#000', opacity = 0, displayTime = 0 }) {
+function createCardWrapper({
+  backgroundColor = '#000',
+  opacity = 0,
+  displayTime = 0
+}) {
   let mask = document.getElementById(maskId);
 
   if (mask) return;
@@ -91,7 +95,7 @@ export default cardModal => {
         displayTime: 0
       };
 
-      showCard(display);
+      createCardWrapper(display);
 
       cardModal(
         { message: options.message },
@@ -104,6 +108,8 @@ export default cardModal => {
         },
         '#' + rootId
       ).show();
+
+      return Promise.resolve();
     }
   };
 };
