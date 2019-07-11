@@ -3,15 +3,14 @@
 import webpack = require('webpack');
 import { resolve } from 'path';
 import merge = require('webpack-merge');
-import UglifyJsPlugin = require('uglifyjs-webpack-plugin');
-import ExtractTextPlugin = require('extract-text-webpack-plugin');
-import OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-import DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin');
-import { banner } from 'webpack-marauder/libs/utils';
-import config = require('webpack-marauder/config');
+import TerserPlugin = require('terser-webpack-plugin');
+import MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+import safePostCssParser = require('postcss-safe-parser');
+import { banner } from '@mara/x/lib/utils';
+import config = require('@mara/x/config');
 
-const maraConf = require(config.paths.marauder);
-const shouldUseSourceMap = !!maraConf.sourceMap;
+const shouldUseSourceMap = config.build.sourceMap;
 const isProd = process.env.NODE_ENV === 'production';
 
 /**
@@ -20,9 +19,9 @@ const isProd = process.env.NODE_ENV === 'production';
  * @param  {String} options.cmd   当前命令
  * @return {Object}               webpack 配置对象
  */
-export default function(resource: string, opts: any) {
-  const baseWebpackConfig = require('webpack-marauder/webpack/webpack.base.conf')(
-    'index'
+export default function(context: object, resource: string, opts: any) {
+  const baseWebpackConfig = require('@mara/x/webpack/webpack.base.conf')(
+    context
   );
   const entry = `${resolve(__dirname, './cardWrapper.js')}?sdk=${
     opts.sdk
@@ -40,40 +39,47 @@ export default function(resource: string, opts: any) {
       : 'cheap-module-source-map',
     watch: false,
     output: {
-      publicPath: config.build.assetsPublicPath,
-      filename: maraConf.hash
-        ? 'static/js/[name].[chunkhash:8].min.js'
+      publicPath: config.assetsPublicPath,
+      filename: config.hash.main
+        ? 'static/js/[name].[chunkhash:8].js'
         : 'static/js/[name].min.js',
-      chunkFilename: maraConf.chunkHash
-        ? 'static/js/[name].[chunkhash:8].async.js'
-        : 'static/js/[name].async.js',
+      chunkFilename: config.hash.chunk
+        ? 'static/js/[name].[chunkhash:8].chunk.js'
+        : 'static/js/[name].chunk.js',
       pathinfo: !isProd
     },
-    plugins: [
-      new webpack.DefinePlugin(
-        isProd ? config.build.env.stringified : config.dev.env.stringified
-      ),
-      // 使作作用域提升(scope hoisting)
-      // https://medium.com/webpack/brief-introduction-to-scope-hoisting-in-webpack-8435084c171f
-      isProd && new webpack.optimize.ModuleConcatenationPlugin(),
-      // Minify the code.
-      isProd &&
-        new UglifyJsPlugin({
-          uglifyOptions: {
-            // 强制使用 es5 压缩输出，避免 es6 优化导致兼容性问题
-            ecma: 5,
+    optimization: {
+      minimize: isProd,
+      minimizer: [
+        new TerserPlugin({
+          terserOptions: {
+            parse: {
+              // we want terser to parse ecma 8 code. However, we don't want it
+              // to apply any minfication steps that turns valid ecma 5 code
+              // into invalid ecma 5 code. This is why the 'compress' and 'output'
+              // sections only apply transformations that are ecma 5 safe
+              // https://github.com/facebook/create-react-app/pull/4234
+              ecma: 8
+            },
             compress: {
+              ecma: 5,
               warnings: false,
               // Disabled because of an issue with Uglify breaking seemingly valid code:
               // https://github.com/facebook/create-react-app/issues/2376
               // Pending further investigation:
               // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false
+              comparisons: false,
+              // Disabled because of an issue with Terser breaking valid code:
+              // https://github.com/facebook/create-react-app/issues/5250
+              // Pending futher investigation:
+              // https://github.com/terser-js/terser/issues/120
+              inline: 2
             },
             mangle: {
               safari10: true
             },
             output: {
+              ecma: 5,
               comments: false,
               // Turned on because emoji and regex is not minified properly using default
               // https://github.com/facebook/create-react-app/issues/2488
@@ -87,42 +93,36 @@ export default function(resource: string, opts: any) {
           cache: true,
           sourceMap: shouldUseSourceMap
         }),
-      // new webpack.ProvidePlugin({
-      //   $: 'zepto',
-      //   Zepto: 'zepto',
-      //   'window.Zepto': 'zepto',
-      //   'window.$': 'zepto'
-      // }),
-      isProd &&
-        new ExtractTextPlugin({
-          filename: maraConf.hash
-            ? 'static/css/[name].[contenthash:8].css'
-            : 'static/css/[name].min.css'
-        }),
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
-      isProd &&
-        new OptimizeCssAssetsPlugin({
-          // cssnano 中自带 autoprefixer，在压缩时会根据配置去除无用前缀
-          // 为保持统一，将其禁用，在 4.0 版本后将会默认禁用
-          // safe: true 禁止计算 z-index
-          cssProcessorOptions: Object.assign(
-            { autoprefixer: false, safe: true },
-            shouldUseSourceMap
+        new OptimizeCSSAssetsPlugin({
+          cssProcessorOptions: {
+            parser: safePostCssParser,
+            map: shouldUseSourceMap
               ? {
-                  map: { inline: false }
+                  // `inline: false` forces the sourcemap to be output into a
+                  // separate file
+                  inline: false,
+                  // `annotation: true` appends the sourceMappingURL to the end of
+                  // the css file, helping the browser find the sourcemap
+                  annotation: true
                 }
-              : {}
-          ),
+              : false
+          },
           canPrint: false // 不显示通知
-        }),
-      new DuplicatePackageCheckerPlugin({
-        // show details
-        verbose: true,
-        showHelp: false,
-        // throwt error
-        emitError: isProd,
-        // check major version
-        strict: true
+        })
+      ],
+      // Keep the runtime chunk seperated to enable long term caching
+      // https://twitter.com/wSokra/status/969679223278505985
+      // set false until https://github.com/webpack/webpack/issues/6598 be resolved
+      runtimeChunk: false
+    },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: config.hash.main
+          ? 'static/css/[name].[contenthash:8].css'
+          : 'static/css/[name].min.css',
+        chunkFilename: config.hash.chunk
+          ? 'static/css/[name].[contenthash:8].chunk.css'
+          : 'static/css/[name].chunk.css'
       }),
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
@@ -130,8 +130,6 @@ export default function(resource: string, opts: any) {
       })
     ].filter(Boolean)
   });
-
-  // 重要：确保 zip plugin 在插件列表末尾
 
   return webpackConfig;
 }

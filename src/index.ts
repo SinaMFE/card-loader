@@ -2,7 +2,7 @@ import { loader, Stats } from 'webpack';
 import { existsSync, readJsonSync } from 'fs-extra';
 import * as path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
-import build, { watchBuild } from './build';
+import build from './build';
 import loaderResult from './output';
 import htmlContent from './template/html';
 
@@ -80,7 +80,7 @@ export default function(this: loader.LoaderContext, source: string): void {
   }
 
   build(this.resource, source, options)
-    .then(({ stats, dependencies }) => {
+    .then(({ stats }) => {
       emitFile(this, cardName, stats.compilation.assets);
 
       callback(null, loaderResult.app(cardName, options));

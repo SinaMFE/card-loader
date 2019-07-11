@@ -8,7 +8,7 @@ export default function(this: loader.LoaderContext, source: Buffer) {
 
   // loader 自身返回的代码需要确保为 es5
   return transES5(`
-    import 'webpack-marauder/webpack/polyfills'
+    import '@mara/x/webpack/polyfills'
     import card from ${stringifyRequest(this, this.resourcePath)}
     import * as SNC from 'card-loader/lib/microSNC'
 
