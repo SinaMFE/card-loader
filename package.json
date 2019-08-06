@@ -53,7 +53,7 @@
     "standard-version": "^4.0.0"
   },
   "peerDependencies": {
-    "@mara/x": "^2.4.1"
+    "@mara/x": "^2.6.0"
   },
   "lint-staged": {
     "src/**/*.{ts,md}": [
