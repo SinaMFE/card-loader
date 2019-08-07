@@ -17,5 +17,7 @@ const babelOpt = {
 };
 
 export function transES5(code: string): string {
-  return transform(code, babelOpt).code;
+  const res = transform(code, babelOpt) || {};
+
+  return res.code || '';
 }

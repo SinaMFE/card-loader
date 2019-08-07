@@ -19,6 +19,11 @@ export default modalPath => {
         options.display.displayTime += '';
       }
 
+      options.message = options.message || {};
+
+      // 添加私有属性，标识 card 页面类型
+      options.message['__PAGE_TYPE__'] = 'card';
+
       options.path = modalPath;
 
       // debug 调试用，在线链接
