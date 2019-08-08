@@ -4,7 +4,6 @@ import * as path from 'path';
 import { getOptions, stringifyRequest } from 'loader-utils';
 import build from './build';
 import loaderResult from './output';
-import htmlContent from './template/html';
 
 const isDev = process.env.NODE_ENV === 'development';
 const isWap =
@@ -16,7 +15,6 @@ const cardNamePool = {};
 function emitFile(ctx: loader.LoaderContext, cardName: string, assets: Stats) {
   const dist = path.posix.join('modal', cardName);
 
-  ctx.emitFile(`${dist}/index.html`, htmlContent, undefined);
   Object.keys(assets).forEach(asset => {
     ctx.emitFile(`${dist}/${asset}`, assets[asset].source(), undefined);
   });

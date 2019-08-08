@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import merge = require('webpack-merge');
 import TerserPlugin = require('terser-webpack-plugin');
 import MiniCssExtractPlugin = require('mini-css-extract-plugin');
+import HtmlWebpackPlugin = require('html-webpack-plugin');
 import OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 import safePostCssParser = require('postcss-safe-parser');
 import { banner } from '@mara/x/lib/utils';
@@ -12,6 +13,7 @@ import config = require('@mara/x/config');
 
 const shouldUseSourceMap = config.build.sourceMap;
 const isProd = process.env.NODE_ENV === 'production';
+const mode = isProd ? 'production' : 'development';
 
 /**
  * 生成生产配置
@@ -21,7 +23,8 @@ const isProd = process.env.NODE_ENV === 'production';
  */
 export default function(context: object, resource: string, opts: any) {
   const baseWebpackConfig = require('@mara/x/webpack/webpack.base.conf')(
-    context
+    context,
+    'card'
   );
   const entry = `${resolve(__dirname, './cardWrapper.js')}?sdk=${
     opts.sdk
@@ -32,6 +35,7 @@ export default function(context: object, resource: string, opts: any) {
     // 在第一个错误出错时抛出，而不是无视错误
     bail: isProd,
     entry,
+    mode: mode,
     devtool: isProd
       ? shouldUseSourceMap
         ? 'source-map'
@@ -42,7 +46,7 @@ export default function(context: object, resource: string, opts: any) {
       publicPath: config.assetsPublicPath,
       filename: config.hash.main
         ? 'static/js/[name].[chunkhash:8].js'
-        : 'static/js/[name].min.js',
+        : 'static/js/[name].js',
       chunkFilename: config.hash.chunk
         ? 'static/js/[name].[chunkhash:8].chunk.js'
         : 'static/js/[name].chunk.js',
@@ -119,7 +123,7 @@ export default function(context: object, resource: string, opts: any) {
       new MiniCssExtractPlugin({
         filename: config.hash.main
           ? 'static/css/[name].[contenthash:8].css'
-          : 'static/css/[name].min.css',
+          : 'static/css/[name].css',
         chunkFilename: config.hash.chunk
           ? 'static/css/[name].[contenthash:8].chunk.css'
           : 'static/css/[name].chunk.css'
@@ -127,6 +131,24 @@ export default function(context: object, resource: string, opts: any) {
       new webpack.BannerPlugin({
         banner: banner(), // 其值为字符串，将作为注释存在
         entryOnly: true // 如果值为 true，将只在入口 chunks 文件中添加
+      }),
+      new HtmlWebpackPlugin({
+        // prod 模式以 index.html 命名输出
+        filename: 'index.html',
+        // 每个html的模版，这里多个页面使用同一个模版
+        template: resolve(__dirname, '../template/index.html'),
+        // 自动将引用插入html
+        inject: true,
+        minify: {
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true
+        }
       })
     ].filter(Boolean)
   });
