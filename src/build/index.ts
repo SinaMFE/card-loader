@@ -7,7 +7,7 @@ import getDependencies from './getDependencies';
 const { version } = require(paths.packageJson);
 
 type Build = {
-  stats: any;
+  assets: Map<string, string>;
   dependencies: string[];
 };
 
@@ -22,8 +22,14 @@ export default async function(
   });
   const webpackConfig = getWebpackConfig(context, resource, opts);
   const compiler = webpack(webpackConfig);
+  const assets = new Map();
 
-  // 使用内存文件系统，构建后通过 stats 获取结果
+  // 获取资源构建结果
+  (compiler.hooks as any).assetEmitted.tap('CardLoader', (file, content) => {
+    assets.set(file, content);
+  });
+
+  // 使用内存文件系统，减少 IO
   compiler.outputFileSystem = new MemoryFS();
 
   return new Promise((resolve, reject) => {
@@ -33,7 +39,7 @@ export default async function(
       // const dependencies = getDependencies(source);
       const dependencies = [];
 
-      resolve({ stats, dependencies });
+      resolve({ assets, dependencies });
     });
   });
 }

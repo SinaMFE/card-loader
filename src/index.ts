@@ -12,11 +12,15 @@ const isWap =
 
 const cardNamePool = {};
 
-function emitFile(ctx: loader.LoaderContext, cardName: string, assets: Stats) {
+function emitFile(
+  ctx: loader.LoaderContext,
+  cardName: string,
+  assets: Map<string, string>
+) {
   const dist = path.posix.join('modal', cardName);
 
-  Object.keys(assets).forEach(asset => {
-    ctx.emitFile(`${dist}/${asset}`, assets[asset].source(), undefined);
+  assets.forEach((content, name) => {
+    ctx.emitFile(`${dist}/${name}`, content, undefined);
   });
 }
 
@@ -78,8 +82,8 @@ export default function(this: loader.LoaderContext, source: string): void {
   }
 
   build(this.resource, source, options)
-    .then(({ stats }) => {
-      emitFile(this, cardName, stats.compilation.assets);
+    .then(({ assets }) => {
+      emitFile(this, cardName, assets);
 
       callback(null, loaderResult.app(cardName, options));
     })
