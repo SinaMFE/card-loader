@@ -190,9 +190,7 @@ function addListener(name: string) {
 export const ready = addListener('ready');
 export const onRendered = defMethod('hb.core.onRendered');
 export const closeWindow = () => {
-  // 兼容多端差异
   defMethod('hb.bee.closeWindow')();
-  defMethod('hb.core.closeWindow')();
 };
 export const showWVModal = defMethod('hb.core.showWVModal', {
   path: '',
