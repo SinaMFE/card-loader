@@ -1,6 +1,6 @@
 import webpack = require('webpack');
 import MemoryFS = require('memory-fs');
-import getContext = require('@mara/x/config/context');
+import getContext = require('@mara/x/config/getContext');
 import paths = require('@mara/x/config/paths');
 import getWebpackConfig from './webpack.config';
 import getDependencies from './getDependencies';
