@@ -66,7 +66,42 @@ function checkCardName(cardName: string, path: string) {
   cardNamePool[path] = cardName;
 }
 
-export default function(this: loader.LoaderContext, source: string): void {
+// function Scheme(this:any) {
+//   this.a = []
+// }
+
+interface Scheme {
+  wait_list: Array<any>
+  count: number
+  limit: number
+}
+class Scheme {
+  constructor(limit: number = 2) {
+    this.wait_list = []
+    this.count = 0
+    this.limit = limit
+  }
+
+  add = async (func: any) => {
+    if (this.count >= this.limit) {
+      await new Promise(resolve => {
+        this.wait_list.push(resolve)
+        console.log('this.wait_list: ', this.wait_list);
+      })
+    }
+
+    this.count++
+    console.log('this.count: ', this.count);
+    await func()
+    this.count--
+    this.wait_list.length && this.wait_list.shift()()
+    console.log('this.wait_list: ', this.wait_list);
+  }
+}
+
+const scheme = new Scheme()
+
+export default function (this: loader.LoaderContext, source: string): void {
   const callback: any = this.async();
   const options = getOptions(this) || {};
   const resourceStr = stringifyRequest(this, this.resourcePath);
@@ -84,10 +119,40 @@ export default function(this: loader.LoaderContext, source: string): void {
   build(this.resource, source, options)
     .then(({ assets }) => {
       emitFile(this, cardName, assets);
-
       callback(null, loaderResult.app(cardName, options));
     })
     .catch(e => {
       callback(e);
     });
+
+  var main = () => {
+    return build(this.resource, source, options)
+      .then(({ assets }) => {
+        emitFile(this, cardName, assets);
+        callback(null, loaderResult.app(cardName, options));
+      })
+      .catch(e => {
+        callback(e);
+      });
+  }
+
+
+  function test(timer = 2000, val) {
+    return function () {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          console.log('val', val);
+          callback(null, loaderResult.app(cardName, options));
+          resolve('')
+        }, timer);
+      })
+    }
+  }
+
+  // scheme.add(main)
+  // scheme.add(test(1000, 1))
+  // scheme.add(test(4000, 2))
+  // scheme.add(test(1000, 3))
+  // scheme.add(test(1000, 4))
+  // scheme.add(test(3000, 5))
 }
