@@ -116,14 +116,14 @@ export default function (this: loader.LoaderContext, source: string): void {
     return callback([e.message]);
   }
 
-  build(this.resource, source, options)
-    .then(({ assets }) => {
-      emitFile(this, cardName, assets);
-      callback(null, loaderResult.app(cardName, options));
-    })
-    .catch(e => {
-      callback(e);
-    });
+  // build(this.resource, source, options)
+  //   .then(({ assets }) => {
+  //     emitFile(this, cardName, assets);
+  //     callback(null, loaderResult.app(cardName, options));
+  //   })
+  //   .catch(e => {
+  //     callback(e);
+  //   });
 
   var main = () => {
     return build(this.resource, source, options)
@@ -136,23 +136,5 @@ export default function (this: loader.LoaderContext, source: string): void {
       });
   }
 
-
-  function test(timer = 2000, val) {
-    return function () {
-      return new Promise(resolve => {
-        setTimeout(() => {
-          console.log('val', val);
-          callback(null, loaderResult.app(cardName, options));
-          resolve('')
-        }, timer);
-      })
-    }
-  }
-
-  // scheme.add(main)
-  // scheme.add(test(1000, 1))
-  // scheme.add(test(4000, 2))
-  // scheme.add(test(1000, 3))
-  // scheme.add(test(1000, 4))
-  // scheme.add(test(3000, 5))
+  scheme.add(main)
 }
