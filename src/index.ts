@@ -116,15 +116,6 @@ export default function (this: loader.LoaderContext, source: string): void {
     return callback([e.message]);
   }
 
-  // build(this.resource, source, options)
-  //   .then(({ assets }) => {
-  //     emitFile(this, cardName, assets);
-  //     callback(null, loaderResult.app(cardName, options));
-  //   })
-  //   .catch(e => {
-  //     callback(e);
-  //   });
-
   var main = () => {
     return build(this.resource, source, options)
       .then(({ assets }) => {
