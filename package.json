@@ -1,6 +1,6 @@
 {
   "name": "card-loader",
-  "version": "2.1.0",
+  "version": "3.0.1",
   "author": "huguang",
   "contributors": [
     "Vincent <vv314@foxmail.com>"
@@ -66,7 +66,7 @@
   },
   "license": "MIT",
   "engines": {
-    "node": ">= 8.0.0"
+    "node": ">= 10.13.0"
   },
   "repository": "https://github.com/SinaMFE/card-loader"
 }
