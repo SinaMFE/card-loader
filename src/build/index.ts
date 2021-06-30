@@ -2,6 +2,7 @@ import webpack = require('webpack');
 import MemoryFS = require('memory-fs');
 import getContext = require('@mara/x/config/getContext');
 import paths = require('@mara/x/config/paths');
+const { getViews } = require("@mara/x/lib/entry");
 import getWebpackConfig from './webpack.config';
 import getDependencies from './getDependencies';
 const { version } = require(paths.packageJson);
@@ -16,9 +17,11 @@ export default async function(
   source: string,
   opts: any = {}
 ): Promise<Build> {
+  let views = getViews(paths.entryGlob, false)
   const context = await getContext({
-    version,
-    view: 'index'
+      version,
+      views,
+      view: 'index'
   });
   const webpackConfig = getWebpackConfig(context, resource, opts);
   const compiler = webpack(webpackConfig);
