@@ -141,7 +141,7 @@ function listen(api: string) {
 
   if (SNC) {
     return SNC.instance.on('ready', rep => {
-      event.trigger(eventName, rep.data);
+      event.trigger(eventName, rep && rep.data);
     });
   }
 
@@ -152,7 +152,7 @@ function listen(api: string) {
       try {
         // 安卓需要二次解析 message
         rep.data.message = JSON.parse(rep.data.message);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     event.trigger(eventName, rep.data);
