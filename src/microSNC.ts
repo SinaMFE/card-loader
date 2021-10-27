@@ -141,7 +141,7 @@ function listen(api: string) {
 
   if (SNC) {
     return SNC.instance.on('ready', rep => {
-      event.trigger(eventName, rep.data);
+      event.trigger(eventName, rep && rep.data);
     });
   }
 
