@@ -3376,10 +3376,10 @@ capture-exit@^2.0.0:
   dependencies:
     rsvp "^4.8.4"
 
-card-loader@^2.0.0:
-  version "2.1.0"
-  resolved "https://registry.npmjs.org/card-loader/-/card-loader-2.1.0.tgz#89b35cabd06ec6c8a85a906b1335a10cba3b03dc"
-  integrity sha512-NoeTS45oT586ccKzn0fFkd05e/xwFII1rIF1y6vgmQv+xL12O+Fd8YJCntuxgjwV7TcalhGGf4dpQ5KloVmebA==
+card-loader@^3.0.0:
+  version "3.0.3"
+  resolved "https://registry.npmmirror.com/card-loader/download/card-loader-3.0.3.tgz#c5c014ab10e0517d0a41a51f52b286eeba13aac4"
+  integrity sha1-xcAUqxDgUX0KQaUfUrKG7roTqsQ=
   dependencies:
     "@babel/core" "^7.8.4"
     "@babel/parser" "^7.8.4"
