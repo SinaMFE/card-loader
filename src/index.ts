@@ -5,10 +5,9 @@ import { getOptions, stringifyRequest } from 'loader-utils';
 import build from './build';
 import loaderResult from './output';
 
+const maraConf = require('@mara/x/config/index');
 const isDev = process.env.NODE_ENV === 'development';
-const isWap =
-  process.env.jsbridgeBuildType === 'wap' ||
-  process.env.jsbridgeBuildType === 'web';
+const isWap = maraConf.target === 'wap' || maraConf.target === 'web';
 
 const cardNamePool = {};
 
